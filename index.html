@@ -89,18 +89,6 @@
   }
   .note:empty { display: none; }
   .note.show { opacity: 1; transform: none; }
-  .note-btn {
-    font: inherit; font-size: 12px; letter-spacing: .14em; text-transform: lowercase;
-    color: var(--text); background: rgba(12, 10, 15, .35);
-    border: 1px solid rgba(244, 235, 230, .2); border-radius: 999px;
-    padding: 10px 20px; cursor: pointer;
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-    transition: border-color .3s ease, background-color .3s ease, transform .15s ease;
-  }
-  .ready .note-btn { pointer-events: auto; }
-  .note-btn:hover { border-color: rgba(244, 235, 230, .45); }
-  .note-btn:active { transform: scale(.97); }
-  .note-btn:focus-visible { outline: 1px solid var(--text); outline-offset: 4px; }
   .hint {
     margin: 0; padding-left: .3em;
     font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
@@ -136,8 +124,7 @@
 
     <footer class="foot">
       <p class="note" id="note" aria-live="polite"></p>
-      <button class="note-btn" id="noteBtn" type="button">a note for you</button>
-      <p class="hint" id="hint">tap to grow more &nbsp;&middot;&nbsp; swipe for a breeze</p>
+      <p class="hint" id="hint">tap to grow a flower &nbsp;&middot;&nbsp; swipe for a breeze</p>
     </footer>
   </div>
 
@@ -781,6 +768,7 @@
     const live = plants.filter((p) => p.raw && !p.dieAt);
     if (live.length > 30) live[0].dieAt = now;
     if (++tapped === 2) $("hint").classList.add("gone");
+    showNote();
   }
 
   /* ------------------------------------------------------------ touch: tap to grow, swipe for a breeze */
@@ -824,8 +812,9 @@
   });
 
   /* ------------------------------------------------------------ notes */
-  const noteEl = $("note"), noteBtn = $("noteBtn");
-  let deck = [], noteTimer = 0;
+  // every flower she grows comes with a note
+  const noteEl = $("note");
+  let deck = [], noteTimer = 0, lastNote = -1e9;
   function nextNote() {
     if (!deck.length) {
       deck = NOTES.slice();
@@ -833,7 +822,10 @@
     }
     return deck.pop();
   }
-  noteBtn.addEventListener("click", () => {
+  function showNote() {
+    const now = performance.now();
+    if (now - lastNote < 3200) return;   // rapid taps keep the current note on screen
+    lastNote = now;
     clearTimeout(noteTimer);
     const had = noteEl.classList.contains("show");
     noteEl.classList.remove("show");
@@ -842,12 +834,8 @@
       void noteEl.offsetWidth;
       noteEl.classList.add("show");
     }, had ? 320 : 0);
-    noteTimer = setTimeout(() => noteEl.classList.remove("show"), 12000);
-    noteBtn.textContent = "another one";
-    const r = noteBtn.getBoundingClientRect();
-    burst(r.left + r.width / 2, r.top, 8);
-  });
-  noteEl.addEventListener("click", () => noteEl.classList.remove("show"));
+    noteTimer = setTimeout(() => noteEl.classList.remove("show"), 8000);
+  }
 
   /* ------------------------------------------------------------ go */
   window.addEventListener("resize", resize);
