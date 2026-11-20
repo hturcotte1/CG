@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0c0a0f">
 <meta name="color-scheme" content="dark">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌷</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💐</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
@@ -29,16 +29,22 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; height: 100%; overflow: hidden;
-    background: var(--bg); color: var(--text);
+    background-color: var(--bg); color: var(--text);
     touch-action: none; overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
   }
-  body { font-family: "Fraunces", Georgia, "Times New Roman", serif; font-weight: 300; }
-  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  body {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif; font-weight: 300;
+    background:
+      radial-gradient(90% 55% at 50% 105%, rgba(120, 55, 85, .22), transparent 70%),
+      radial-gradient(70% 40% at 50% 0%, rgba(255, 225, 235, .05), transparent 70%),
+      linear-gradient(180deg, #0b090e 0%, #15101a 100%);
+  }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  canvas:active { cursor: grabbing; }
 
   .ui { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-
   .title {
     position: absolute; left: 0; right: 0; top: 50%;
     transform: translateY(-60%);
@@ -64,32 +70,31 @@
   }
   .line + .line { margin-top: 6px; font-style: italic; }
   .line.show { opacity: 1; transform: none; }
-
   .begin {
     position: absolute; left: 0; right: 0; top: calc(50% + 62px); margin: 0;
     text-align: center; padding-left: .4em;
     font-size: 10.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--muted);
     opacity: 0; animation: rise 1.6s 1.3s var(--ease) forwards, breathe 3.2s 3s ease-in-out infinite;
-    transition: opacity .6s ease;
   }
-  .started .begin { animation: none; opacity: 0; }
-
-  .foot {
-    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 20px);
-    display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 24px;
+  .started .begin { animation: none; opacity: 0; transition: opacity .6s ease; }
+  .hint {
+    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 20px); margin: 0;
+    text-align: center; padding: 0 16px 0 calc(16px + .3em);
+    font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
     opacity: 0; transition: opacity 1.8s ease;
   }
-  .ready .foot { opacity: 1; }
-  .hint {
-    margin: 0; padding-left: .3em; text-align: center;
-    font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
-    transition: opacity 1.2s ease;
+  .ready .hint { opacity: 1; }
+  .ps {
+    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 42px); margin: 0;
+    padding: 0 24px; text-align: center;
+    font-style: italic; font-size: clamp(13px, 3.6vw, 15px); line-height: 1.4; color: var(--soft);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 2s ease, transform 2s var(--ease);
   }
-  .hint.gone { opacity: 0; }
-
+  .ps.show { opacity: 1; transform: none; }
+  .ready .hint.gone { opacity: 0; }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-
   @media (max-height: 560px) {
     h1 { font-size: clamp(40px, 10vh, 56px); }
     .line { font-size: 14px; margin-top: 8px; }
@@ -101,849 +106,807 @@
 </style>
 </head>
 <body>
-  <canvas id="garden" role="img" aria-label="A night garden where flowers grow and bloom for Clare: roses, anemones, cosmos, daisies and tulips"></canvas>
+  <canvas id="scene" aria-label="A 3D bouquet for Clare: roses, anemones, cosmos, daisies and tulips tied with a pink ribbon"></canvas>
 
-  <div class="ui" id="ui">
+  <div class="ui">
     <header class="title" id="title">
       <p class="for">for</p>
       <h1>Clare</h1>
       <p class="line" id="l1">Couldn't get you real flowers today,<br>so I grew you some.</p>
       <p class="line" id="l2">I love you. &nbsp;&mdash; Henry</p>
     </header>
-
     <p class="begin" id="begin">touch to begin</p>
-
-    <footer class="foot">
-      <p class="hint" id="hint">tap to grow &nbsp;&middot;&nbsp; swipe for a breeze</p>
-    </footer>
+    <p class="ps" id="ps">also, finish your seminar soon so you can sleep</p>
+    <p class="hint" id="hint">drag to spin &nbsp;&middot;&nbsp; tap a flower</p>
   </div>
 
   <noscript><p style="position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#f4ebe6;font-family:Georgia,serif">Turn on JavaScript to see your flowers.</p></noscript>
 
-<script>
-(() => {
-  "use strict";
+<script type="module">
+import * as THREE from "./vendor/three.module.min.js";
 
-  /* ------------------------------------------------------------ helpers */
-  const reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const $ = (id) => document.getElementById(id);
-  const canvas = $("garden");
-  const ctx = canvas.getContext("2d");
-  const docEl = document.documentElement;
-  const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const FALLBACK = "garden.html";   // the 2D garden, for phones without WebGL
 
-  const rand = (a, b) => a + Math.random() * (b - a);
-  const pick = (a) => a[Math.floor(Math.random() * a.length)];
-  const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
-  const easeGrow = (x) => 1 - Math.pow(1 - clamp(x), 3);
-  // soft start, gentle overshoot, settle
-  const backOut = (u) => {
-    if (u <= 0) return 0;
-    if (u >= 1) return 1;
-    const s = u * u * (3 - 2 * u) - 1;
-    return 1 + 2.2 * s * s * s + 1.2 * s * s;
-  };
+/* ================================================================ helpers */
+const reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const $ = (id) => document.getElementById(id);
+const docEl = document.documentElement;
+const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
+const easeOut = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const easeInOut = (x) => { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const backOut = (u) => {
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  const s = u * u * (3 - 2 * u) - 1;
+  return 1 + 2.2 * s * s * s + 1.2 * s * s;
+};
+const UP = new THREE.Vector3(0, 1, 0);
 
-  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  const tone = (c, f, s, a) => {
-    const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
-    return "rgba(" + Math.min(255, ((l + (c[0] - l) * s) * f) | 0) + "," + Math.min(255, ((l + (c[1] - l) * s) * f) | 0) + "," +
-      Math.min(255, ((l + (c[2] - l) * s) * f) | 0) + "," + a + ")";
-  };
-  const col = (c, f, a) =>
-    "rgba(" + Math.min(255, (c[0] * f) | 0) + "," + Math.min(255, (c[1] * f) | 0) + "," + Math.min(255, (c[2] * f) | 0) + "," + a + ")";
+/* ================================================================ renderer */
+const canvas = $("scene");
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+} catch (e) {
+  location.replace(FALLBACK);
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.setClearColor(0x000000, 0);
 
-  /* ------------------------------------------------------------ palettes: front base, front tip, back base, back tip */
-  const PAL = {};
-  Object.entries({
-    blush:  ["#e27a96", "#ffdae3", "#d86d8b", "#f9c6d3"],
-    peach:  ["#ec8c63", "#ffe0c9", "#e0825b", "#fbd3ba"],
-    cream:  ["#e2d2c6", "#fffaf4", "#dbc9bd", "#f8f0ea"],
-    coral:  ["#d6364f", "#ff9395", "#c8304a", "#f5868c"],
-    lilac:  ["#9d82da", "#ede1ff", "#9379d3", "#ddcff9"],
-    butter: ["#e7b23a", "#fff2c2", "#dba633", "#f8e3a0"],
-    white:  ["#e6e0da", "#ffffff", "#ddd6cf", "#f8f5f2"],
-    green:  ["#33603d", "#78a982", "#2c5434", "#5f8f68"]
-  }).forEach(([k, v]) => { PAL[k] = v.map(hex); });
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
 
-  const STEM = hex("#4d7a56");
-  const LEAF_A = hex("#2c5636"), LEAF_B = hex("#6c9c74");
-  const BG_TOP = [11, 9, 14], BG_BOT = [21, 16, 26];
+scene.add(new THREE.HemisphereLight(0xffe4ee, 0x231424, 0.7));
+const key = new THREE.DirectionalLight(0xfff0e6, 2.0); key.position.set(-3, 5, 6); scene.add(key);
+const rim = new THREE.DirectionalLight(0xff9cc2, 2.2); rim.position.set(3, 3, -6); scene.add(rim);
+const rim2 = new THREE.DirectionalLight(0xb6a2ff, 1.3); rim2.position.set(-5, 0.5, -3); scene.add(rim2);
+const fill = new THREE.PointLight(0xffd6c6, 10, 30, 2); fill.position.set(0, -1.5, 6); scene.add(fill);
 
-  /* ------------------------------------------------------------ flower types */
-  // petal width profile: narrow base, widest at m, tip bluntness b
-  const prof = (m, b) => {
-    const a = Math.log(0.5) / Math.log(m);
-    return (t) => (t <= 0 || t >= 1 ? 0 : Math.pow(Math.sin(Math.PI * Math.pow(t, a)), b));
-  };
+const bouquet = new THREE.Group();
+bouquet.rotation.order = "XYZ";
+scene.add(bouquet);
 
-  const SEPAL = { L: 0.42, W: 0.42, bud: 12, open: 118, curl: 0.3, cup: 0.2, pf: prof(0.35, 0.9) };
-
-  const TYPES = {
-    rose: {
-      face: [0.55, 0.85], size: 1, sepals: true, pf: prof(0.6, 0.5), pals: ["blush", "peach", "cream", "coral"],
-      layers: [
-        { n: 5, L: 1.0,  W: 1.05, bud: 9, open: 96, curl: 0.45,  cup: 0.3,  bs: 0.62, d: 0,    sh: 1 },
-        { n: 5, L: 0.88, W: 1.0,  bud: 6, open: 70, curl: 0.12,  cup: 0.42, bs: 0.36, d: 0.14, sh: 0.97 },
-        { n: 5, L: 0.74, W: 0.95, bud: 4, open: 48, curl: -0.12, cup: 0.5,  bs: 0.22, d: 0.28, sh: 0.94 },
-        { n: 4, L: 0.58, W: 0.9,  bud: 3, open: 30, curl: -0.25, cup: 0.5,  bs: 0.14, d: 0.4,  sh: 0.91 },
-        { n: 3, L: 0.42, W: 0.9,  bud: 2, open: 14, curl: -0.3,  cup: 0.4,  bs: 0.1,  d: 0.5,  sh: 0.88 }
-      ]
-    },
-    anemone: {
-      face: [0.5, 0.9], size: 1, sepals: false, center: "anemone", pf: prof(0.62, 0.42), pals: ["cream", "coral", "lilac", "cream"],
-      layers: [
-        { n: 6, L: 1.0, W: 1.0,  bud: 10, open: 80, curl: 0.12, cup: 0.32, bs: 0.6,  d: 0,    sh: 1 },
-        { n: 5, L: 0.8, W: 0.92, bud: 6,  open: 62, curl: 0.05, cup: 0.38, bs: 0.35, d: 0.12, sh: 0.96 }
-      ]
-    },
-    cosmos: {
-      face: [0.45, 0.9], size: 0.95, sepals: true, center: "cosmos", pf: prof(0.78, 0.32), pals: ["blush", "lilac", "peach", "cream"],
-      layers: [{ n: 8, L: 1.0, W: 0.62, bud: 8, open: 84, curl: 0.12, cup: 0.14, bs: 0.55, d: 0, sh: 1 }]
-    },
-    daisy: {
-      face: [0.45, 0.9], size: 0.85, sepals: true, center: "daisy", pf: prof(0.5, 0.7), pals: ["white"],
-      layers: [
-        { n: 16, L: 1.0,  W: 0.24, bud: 6, open: 86, curl: 0.18, cup: 0.1, bs: 0.5, d: 0,    sh: 1 },
-        { n: 13, L: 0.84, W: 0.22, bud: 5, open: 76, curl: 0.1,  cup: 0.1, bs: 0.4, d: 0.08, sh: 0.95 }
-      ]
-    },
-    tulip: {
-      face: [0.96, 0.28], size: 0.82, sepals: false, sortAll: true, pf: prof(0.5, 0.78), pals: ["coral", "blush", "peach", "butter"],
-      layers: [
-        { n: 3, L: 1.3,  W: 0.85, bud: 5, open: 34, curl: 0.5, cup: 0.55, bs: 0.72, d: 0,    sh: 1 },
-        { n: 3, L: 1.24, W: 0.8,  bud: 3, open: 25, curl: 0.4, cup: 0.55, bs: 0.7,  d: 0.05, sh: 0.94, off: Math.PI / 3 }
-      ]
+/* ================================================================ textures */
+function canvasTex(size, draw) {
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  draw(c.getContext("2d"), size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const glowTex = canvasTex(128, (g, s) => {
+  const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.25, "rgba(255,255,255,.42)"); r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+});
+const ringTex = canvasTex(256, (g, s) => {
+  const r = g.createRadialGradient(s / 2, s / 2, s * 0.36, s / 2, s / 2, s / 2);
+  r.addColorStop(0, "rgba(255,255,255,0)"); r.addColorStop(0.55, "rgba(255,255,255,.9)"); r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+});
+const dotTex = canvasTex(64, (g, s) => {
+  const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.3, "rgba(255,255,255,.5)"); r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+});
+const centerTex = {
+  anemone: canvasTex(256, (g, s) => {
+    const c = s / 2;
+    g.fillStyle = "#2a1a2e"; g.fillRect(0, 0, s, s);
+    g.strokeStyle = "rgba(20,10,22,.9)"; g.lineWidth = 2;
+    for (let i = 0; i < 40; i++) { const a = (i / 40) * TAU; g.beginPath(); g.moveTo(c + Math.cos(a) * s * 0.26, c + Math.sin(a) * s * 0.26); g.lineTo(c + Math.cos(a) * s * 0.42, c + Math.sin(a) * s * 0.42); g.stroke(); }
+    for (let i = 0; i < 40; i++) {
+      const a = (i / 40) * TAU + (i % 2) * 0.05, r = s * (0.4 + (i % 3) * 0.03);
+      g.fillStyle = "#120914"; g.beginPath(); g.arc(c + Math.cos(a) * r, c + Math.sin(a) * r, s * 0.028, 0, TAU); g.fill();
+      g.fillStyle = "rgba(160,120,170,.35)"; g.beginPath(); g.arc(c + Math.cos(a) * r - 1.5, c + Math.sin(a) * r - 1.5, s * 0.01, 0, TAU); g.fill();
     }
-  };
-  Object.values(TYPES).forEach((T) => { T.maxD = Math.max.apply(null, T.layers.map((l) => l.d)); });
+    const rg = g.createRadialGradient(c - 8, c - 8, 0, c, c, s * 0.27);
+    rg.addColorStop(0, "#6a4a78"); rg.addColorStop(0.6, "#2b1630"); rg.addColorStop(1, "#140a16");
+    g.fillStyle = rg; g.beginPath(); g.arc(c, c, s * 0.27, 0, TAU); g.fill();
+  }),
+  cosmos: canvasTex(128, (g, s) => {
+    const c = s / 2, rg = g.createRadialGradient(c, c, 0, c, c, s / 2);
+    rg.addColorStop(0, "#ffe27a"); rg.addColorStop(1, "#e49a2c");
+    g.fillStyle = rg; g.fillRect(0, 0, s, s);
+    g.fillStyle = "rgba(170,95,20,.75)";
+    for (let i = 1; i < 60; i++) { const r = 5.2 * Math.sqrt(i), a = i * 2.39996; if (r > s * 0.46) break; g.beginPath(); g.arc(c + Math.cos(a) * r, c + Math.sin(a) * r, 2.2, 0, TAU); g.fill(); }
+  }),
+  daisy: canvasTex(256, (g, s) => {
+    const c = s / 2, rg = g.createRadialGradient(c - 10, c - 10, 0, c, c, s / 2);
+    rg.addColorStop(0, "#ffe68a"); rg.addColorStop(0.7, "#f2b236"); rg.addColorStop(1, "#d68a20");
+    g.fillStyle = rg; g.fillRect(0, 0, s, s);
+    g.fillStyle = "rgba(150,85,15,.5)";
+    for (let i = 1; i < 260; i++) { const r = 7.6 * Math.sqrt(i), a = i * 2.39996; if (r > s * 0.47) break; g.beginPath(); g.arc(c + Math.cos(a) * r, c + Math.sin(a) * r, 2.6, 0, TAU); g.fill(); }
+  })
+};
 
-  // the opening bouquet (x across a centered composition box, y down the screen)
-  const LAYOUT = [
-    { type: "rose",    pal: "blush", x: 0.50, y: 0.43, s: 1.12 },
-    { type: "anemone", pal: "cream", x: 0.27, y: 0.50, s: 1.0 },
-    { type: "tulip",   pal: "coral", x: 0.73, y: 0.48, s: 1.0 },
-    { type: "cosmos",  pal: "peach", x: 0.13, y: 0.63, s: 0.9 },
-    { type: "daisy",   pal: "white", x: 0.87, y: 0.62, s: 0.9 },
-    { type: "rose",    pal: "peach", x: 0.63, y: 0.64, s: 0.95 },
-    { type: "tulip",   pal: "blush", x: 0.38, y: 0.68, s: 0.85 },
-    { type: "cosmos",  pal: "lilac", x: 0.88, y: 0.41, s: 0.78 },
-    { type: "anemone", pal: "coral", x: 0.11, y: 0.42, s: 0.78 },
-    { type: "daisy",   pal: "white", x: 0.53, y: 0.76, s: 0.72 },
-    { type: "cosmos",  pal: "blush", x: 0.22, y: 0.36, s: 0.58, back: true },
-    { type: "rose",    pal: "blush", x: 0.78, y: 0.34, s: 0.6,  back: true },
-    { type: "cosmos",  pal: "lilac", x: 0.42, y: 0.55, s: 0.55, back: true },
-    { type: "tulip",   pal: "lilac", x: 0.62, y: 0.53, s: 0.55, back: true }
-  ];
+/* ================================================================ palettes + flower types */
+const PAL = {
+  blush:  ["#c9567a", "#f6b3c6"],
+  peach:  ["#dc7346", "#fbc4a2"],
+  cream:  ["#c9b3a3", "#f5ebe1"],
+  coral:  ["#bb2340", "#f0727c"],
+  lilac:  ["#7a5fc4", "#cbb6f4"],
+  butter: ["#d69a20", "#f6da86"],
+  white:  ["#d3cbc3", "#faf7f4"]
+};
 
-  /* ------------------------------------------------------------ canvas sizing */
-  let W = 0, H = 0, DPR = 1, S = 1, CW = 1, CX0 = 0, bandTop = 0, safeTop = 0;
-  let bgCanvas = null, fogGrad = null;
-  const LIGHT = (() => { const v = [-0.35, 0.6, 0.72]; const l = Math.hypot(v[0], v[1], v[2]); return v.map((x) => x / l); })();
-
-  const probe = document.createElement("div");
-  probe.style.cssText = "position:fixed;top:0;left:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top)";
-  document.body.appendChild(probe);
-
-  function measureBand() {
-    safeTop = parseFloat(getComputedStyle(probe).paddingTop) || 0;
-    const titleH = $("title").offsetHeight;
-    const pad = H < 560 ? 14 : 28;
-    bandTop = Math.min(H * 0.5, safeTop + pad + titleH + 6);
+const TYPES = {
+  rose: {
+    m: 0.6, b: 0.5, ruffle: 0.025, sepals: true,
+    layers: [
+      { n: 5, L: 1.0,  W: 1.05, bud: 10, open: 92, curl: 0.5,   cup: 0.35, bs: 0.62, d: 0,    sh: 1 },
+      { n: 5, L: 0.86, W: 1.0,  bud: 7,  open: 68, curl: 0.25,  cup: 0.45, bs: 0.36, d: 0.14, sh: 0.96 },
+      { n: 5, L: 0.72, W: 0.95, bud: 5,  open: 46, curl: 0.05,  cup: 0.55, bs: 0.22, d: 0.28, sh: 0.92 },
+      { n: 4, L: 0.56, W: 0.9,  bud: 3,  open: 28, curl: -0.1,  cup: 0.6,  bs: 0.14, d: 0.4,  sh: 0.88 },
+      { n: 3, L: 0.4,  W: 0.9,  bud: 2,  open: 12, curl: -0.15, cup: 0.5,  bs: 0.1,  d: 0.5,  sh: 0.84 }
+    ]
+  },
+  anemone: {
+    m: 0.62, b: 0.42, ruffle: 0.02, sepals: false, center: "anemone", cr: 0.27, ch: 0.07,
+    layers: [
+      { n: 6, L: 1.0, W: 1.0,  bud: 10, open: 80, curl: 0.18, cup: 0.3,  bs: 0.6,  d: 0,    sh: 1 },
+      { n: 5, L: 0.8, W: 0.92, bud: 6,  open: 62, curl: 0.08, cup: 0.38, bs: 0.35, d: 0.12, sh: 0.95 }
+    ]
+  },
+  cosmos: {
+    m: 0.78, b: 0.32, ruffle: 0.015, sepals: true, center: "cosmos", cr: 0.15, ch: 0.06,
+    layers: [{ n: 8, L: 1.0, W: 0.62, bud: 8, open: 82, curl: 0.16, cup: 0.12, bs: 0.55, d: 0, sh: 1 }]
+  },
+  daisy: {
+    m: 0.5, b: 0.7, ruffle: 0, sepals: true, center: "daisy", cr: 0.22, ch: 0.1,
+    layers: [
+      { n: 14, L: 1.0,  W: 0.24, bud: 6, open: 84, curl: 0.2,  cup: 0.08, bs: 0.5, d: 0,    sh: 1 },
+      { n: 11, L: 0.84, W: 0.22, bud: 5, open: 72, curl: 0.12, cup: 0.08, bs: 0.4, d: 0.08, sh: 0.94 }
+    ]
+  },
+  tulip: {
+    m: 0.5, b: 0.78, ruffle: 0, sepals: false,
+    layers: [
+      { n: 3, L: 1.25, W: 0.85, bud: 5, open: 30, curl: 0.5, cup: 0.6, bs: 0.72, d: 0,    sh: 1 },
+      { n: 3, L: 1.2,  W: 0.8,  bud: 3, open: 22, curl: 0.4, cup: 0.6, bs: 0.7,  d: 0.05, sh: 0.93, off: Math.PI / 3 }
+    ]
   }
+};
+Object.values(TYPES).forEach((T) => { T.maxD = Math.max.apply(null, T.layers.map((l) => l.d)); });
+const SEPAL = { L: 0.42, bud: 12, open: 116, bs: 0.75 };
 
-  function resize() {
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-    S = Math.min(W, H);
-    CW = Math.min(W, H * 0.95);
-    CX0 = (W - CW) / 2;
-
-    bgCanvas = document.createElement("canvas");
-    bgCanvas.width = canvas.width; bgCanvas.height = canvas.height;
-    const b = bgCanvas.getContext("2d");
-    b.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const lg = b.createLinearGradient(0, 0, 0, H);
-    lg.addColorStop(0, "rgb(" + BG_TOP + ")"); lg.addColorStop(1, "rgb(" + BG_BOT + ")");
-    b.fillStyle = lg; b.fillRect(0, 0, W, H);
-    const rg = b.createRadialGradient(W / 2, H * 1.05, 0, W / 2, H * 1.05, Math.max(W, H) * 0.75);
-    rg.addColorStop(0, "rgba(120,55,85,.20)"); rg.addColorStop(1, "rgba(120,55,85,0)");
-    b.fillStyle = rg; b.fillRect(0, 0, W, H);
-    const tg = b.createRadialGradient(W / 2, 0, 0, W / 2, 0, Math.max(W * 0.7, 300));
-    tg.addColorStop(0, "rgba(255,225,235,.045)"); tg.addColorStop(1, "rgba(255,225,235,0)");
-    b.fillStyle = tg; b.fillRect(0, 0, W, H);
-
-    fogGrad = ctx.createLinearGradient(0, H * 0.8, 0, H);
-    fogGrad.addColorStop(0, "rgba(" + BG_BOT + ",0)");
-    fogGrad.addColorStop(1, "rgba(" + BG_BOT + ",.92)");
-
-    for (const p of plants) p.cache = null;
-    measureBand();
+/* ================================================================ geometry builders */
+function buildPetal(o) {
+  const g = new THREE.PlaneGeometry(1, 1, 6, 10);
+  const pos = g.attributes.position;
+  const col = new Float32Array(pos.count * 3);
+  const a = Math.log(0.5) / Math.log(o.m);
+  const c0 = new THREE.Color(o.c0), c1 = new THREE.Color(o.c1), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i);
+    const v0 = pos.getY(i) + 0.5;
+    const v = 1 - Math.pow(1 - v0, 1.5);                       // more rows near the tip
+    const w = v <= 0 || v >= 1 ? 0 : Math.pow(Math.sin(Math.PI * Math.pow(v, a)), o.b);
+    const hw = 0.5 * o.W * o.L * w;
+    let z = -o.cup * 4 * u * u * hw;                            // edges lift toward the flower's middle
+    z += o.curl * v * v * o.L * 0.5;                            // tips roll back
+    z += o.ruffle * o.L * Math.sin(u * 11 + v * 7) * w;         // a little life in the edges
+    pos.setXYZ(i, 2 * u * hw, v * o.L - Math.abs(o.curl) * v * v * o.L * 0.12, z);
+    c.copy(c0).lerp(c1, Math.pow(v, 0.85));
+    const shade = (0.7 + 0.3 * smooth(0, 0.35, v)) * (1 - 0.4 * u * u) * (o.sh || 1);
+    col[i * 3] = c.r * shade; col[i * 3 + 1] = c.g * shade; col[i * 3 + 2] = c.b * shade;
   }
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
 
-  /* ------------------------------------------------------------ sprites */
-  const glowCache = {};
-  function glowSprite(c) {
-    const key = c.join(",");
-    if (glowCache[key]) return glowCache[key];
-    const cv = document.createElement("canvas"); cv.width = cv.height = 96;
-    const g = cv.getContext("2d");
-    const rg = g.createRadialGradient(48, 48, 0, 48, 48, 48);
-    rg.addColorStop(0, "rgba(" + key + ",.9)"); rg.addColorStop(0.35, "rgba(" + key + ",.3)"); rg.addColorStop(1, "rgba(" + key + ",0)");
-    g.fillStyle = rg; g.fillRect(0, 0, 96, 96);
-    return (glowCache[key] = cv);
+const geoCache = {};
+function petalGeo(type, li, palName) {
+  const k = type + ":" + li + ":" + palName;
+  if (geoCache[k]) return geoCache[k];
+  const T = TYPES[type], ly = T.layers[li], P = PAL[palName];
+  return (geoCache[k] = buildPetal({ L: ly.L, W: ly.W, m: T.m, b: T.b, cup: ly.cup, curl: ly.curl, ruffle: T.ruffle, c0: P[0], c1: P[1], sh: ly.sh }));
+}
+const sepalGeo = buildPetal({ L: SEPAL.L, W: 0.42, m: 0.35, b: 0.9, cup: 0.2, curl: 0.3, ruffle: 0, c0: "#2c5435", c1: "#6f9f77" });
+
+function buildLeaf(len, wid, fold, droop) {
+  const g = new THREE.PlaneGeometry(1, 1, 4, 12);
+  const pos = g.attributes.position;
+  const col = new Float32Array(pos.count * 3);
+  const c0 = new THREE.Color("#244a2e"), c1 = new THREE.Color("#79a97f"), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i), v = pos.getY(i) + 0.5;
+    const w = v <= 0 || v >= 1 ? 0 : Math.pow(Math.sin(Math.PI * Math.pow(v, 0.8)), 0.9);
+    const hw = 0.5 * wid * w;
+    const z = -fold * Math.abs(2 * u) * hw + droop * v * v * len * 0.6;
+    pos.setXYZ(i, 2 * u * hw, v * len * (1 - droop * v * 0.12), z);
+    c.copy(c0).lerp(c1, Math.pow(v, 0.7));
+    const k = 0.85 + 0.15 * (1 - Math.abs(2 * u));
+    col[i * 3] = c.r * k; col[i * 3 + 1] = c.g * k; col[i * 3 + 2] = c.b * k;
   }
-  const pollenSprite = (() => {
-    const cv = document.createElement("canvas"); cv.width = cv.height = 32;
-    const g = cv.getContext("2d");
-    const rg = g.createRadialGradient(16, 16, 0, 16, 16, 16);
-    rg.addColorStop(0, "rgba(255,240,220,1)"); rg.addColorStop(0.25, "rgba(255,220,200,.55)"); rg.addColorStop(1, "rgba(255,190,170,0)");
-    g.fillStyle = rg; g.fillRect(0, 0, 32, 32);
-    return cv;
-  })();
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
 
-  /* ------------------------------------------------------------ plants */
-  let plants = [];
-  const N = 26;
-
-  function makePlant(o) {
-    const T = TYPES[o.type];
-    const palName = o.pal || pick(T.pals);
-    const ry = 1.04;
-    const p0 = [o.rx, ry];
-    const p1 = [o.rx + rand(-0.05, 0.05), lerp(ry, o.y, 0.4)];
-    const p2 = [o.x + rand(-0.06, 0.06), lerp(ry, o.y, 0.75)];
-    const p3 = [o.x, o.y];
-    const nodes = [];
-    for (let i = 0; i < N; i++) {
-      const t = i / (N - 1), u = 1 - t;
-      const a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
-      nodes.push([a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]]);
-    }
-    const nPet = T.layers.reduce((s, l) => s + l.n, 0) + 5;
-    const jit = [];
-    for (let i = 0; i < nPet; i++) jit.push([rand(-0.09, 0.09), rand(0.93, 1.07)]);
-    const leaves = [];
-    const side0 = Math.random() < 0.5 ? 1 : -1;
-    const nl = o.back ? 1 : Math.random() < 0.55 ? 2 : 1;
-    for (let j = 0; j < nl; j++) {
-      leaves.push({ f: rand(0.2, 0.42) + j * 0.2, side: j % 2 ? -side0 : side0, len: rand(1.05, 1.5), wid: rand(0.2, 0.27), ang: rand(0.45, 0.8), ph: rand(0, TAU) });
-    }
-    return {
-      type: o.type, T, pal: PAL[palName], nodes, size: o.s, back: !!o.back, raw: !!o.raw,
-      born: o.born, growDur: o.growDur, bloomDur: o.bloomDur, bloomEnd: Infinity,
-      rot: rand(0, TAU), jx: rand(-0.22, 0.22), jit, leaves,
-      dim: o.back ? 0.6 : 1,
-      q: T.layers.map(() => 0), g: 0, b: 0, v: 0,
-      xs: new Float32Array(N), ys: new Float32Array(N),
-      tipX: null, tipY: null, tanX: 0, tanY: -1, mx: null, my: null,
-      qe: T.layers.map(() => 0), tw: Math.random() < 0.5 ? 1 : -1, ft: 0, flutterAt: 0,
-      flashed: false, sparkAcc: 0, cache: null, dieAt: 0, fade: 1
-    };
-  }
-
-  const baseR = (p) => S * 0.082 * p.size * p.T.size;
-  const mapX = (xn) => CX0 + xn * CW;
-  const mapY = (p, yn) => (p.raw ? yn * H : H - ((1 - yn) * (H - bandTop)) / 0.7);
-
-  function wind(now, x) {
-    if (reduce) return 0;
-    const t = now / 1000;
-    return 0.05 * Math.sin(t * 0.9 + x * 2.2) + 0.025 * Math.sin(t * 1.7 + x * 4.1 + 1.3) + 0.012 * Math.sin(t * 3.3 + x * 7.7 + 0.4);
-  }
-
-  const K = 16, DAMP = 2.4;
-  function update(p, now, dt) {
-    const T = p.T;
-    const bStart = p.born + p.growDur + 120;
-    if (reduce) { p.g = 1; for (let i = 0; i < p.q.length; i++) p.q[i] = 1; }
-    else {
-      p.g = easeGrow((now - p.born) / p.growDur);
-      for (let i = 0; i < T.layers.length; i++) p.q[i] = backOut((now - bStart - T.layers[i].d * p.bloomDur) / p.bloomDur);
-    }
-    p.bloomEnd = reduce ? 0 : bStart + (T.maxD + 1) * p.bloomDur + 60;
-    p.v += (-K * p.b - DAMP * p.v) * dt;
-    p.b = clamp(p.b + p.v * dt, -0.55, 0.55);
-    p.fade = p.dieAt ? clamp(1 - (now - p.dieAt) / 1200) : 1;
-
-    // tapped flowers close part way and twirl back open
-    let ff = 1;
-    p.ft = 0;
-    if (p.flutterAt) {
-      const u = (now - p.flutterAt) / 1300;
-      if (u >= 1) p.flutterAt = 0;
-      else { const sn = Math.sin(Math.PI * u); ff = 1 - 0.45 * sn; p.ft = 0.75 * sn; }
-    }
-    for (let i = 0; i < p.q.length; i++) p.qe[i] = p.q[i] * ff;
-
-    // sway the stem: rest shape + wind + touch breeze
-    let Lpx = 0, px = 0, py = 0;
-    for (let i = 0; i < N; i++) {
-      const x = mapX(p.nodes[i][0]), y = mapY(p, p.nodes[i][1]);
-      if (i) Lpx += Math.hypot(x - px, y - py);
-      p.xs[i] = x; p.ys[i] = y; px = x; py = y;
-    }
-    const seek = reduce ? 0 : (1 - p.g) * 0.13 * Math.sin(now / 420 + p.rot * 3);   // growing tips search side to side
-    const bend = wind(now, p.nodes[N - 1][0]) * (p.back ? 0.7 : 1) + p.b + seek;
-    const sb = Math.sin(bend), cb = 1 - Math.cos(bend);
-    for (let i = 0; i < N; i++) {
-      const s = i / (N - 1), f = s * s;
-      p.xs[i] += sb * Lpx * f * 0.55;
-      p.ys[i] += cb * Lpx * f * 0.3;
+function domeGeo(r, h, rings = 6, segs = 28) {
+  const P = [0, h, 0], U = [0.5, 0.5], I = [];
+  for (let i = 1; i <= rings; i++) {
+    const f = i / rings, rr = r * f, y = h * (1 - f * f);
+    for (let j = 0; j < segs; j++) {
+      const a = (j / segs) * TAU;
+      P.push(Math.cos(a) * rr, y, Math.sin(a) * rr);
+      U.push(0.5 + Math.cos(a) * 0.5 * f, 0.5 + Math.sin(a) * 0.5 * f);
     }
   }
-
-  /* ---------- stem + leaves */
-  const vx = new Float32Array(N + 1), vy = new Float32Array(N + 1);
-  const lx = new Float32Array(N + 1), ly = new Float32Array(N + 1), rx = new Float32Array(N + 1), ry = new Float32Array(N + 1);
-
-  function drawStem(p, now) {
-    const k = p.g * (N - 1);
-    if (k <= 0.02) return;
-    const i0 = Math.floor(k), fr = k - i0;
-    let n = 0;
-    for (let i = 0; i <= i0 && i < N; i++) { vx[n] = p.xs[i]; vy[n] = p.ys[i]; n++; }
-    if (i0 < N - 1 && fr > 0.001) { vx[n] = lerp(p.xs[i0], p.xs[i0 + 1], fr); vy[n] = lerp(p.ys[i0], p.ys[i0 + 1], fr); n++; }
-    if (n < 2) return;
-    const R0 = baseR(p);
-    const w0 = Math.max(0.8, R0 * 0.045);
-    for (let i = 0; i < n; i++) {
-      const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
-      let tx = vx[b] - vx[a], ty = vy[b] - vy[a];
-      const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
-      const s = Math.min(i, k) / (N - 1);
-      const hw = w0 * (1 - 0.55 * s);
-      lx[i] = vx[i] - ty * hw; ly[i] = vy[i] + tx * hw;
-      rx[i] = vx[i] + ty * hw; ry[i] = vy[i] - tx * hw;
-    }
-    ctx.beginPath();
-    ctx.moveTo(lx[0], ly[0]);
-    for (let i = 1; i < n; i++) ctx.lineTo(lx[i], ly[i]);
-    for (let i = n - 1; i >= 0; i--) ctx.lineTo(rx[i], ry[i]);
-    ctx.closePath();
-    ctx.fillStyle = col(STEM, p.dim, 1);
-    ctx.fill();
-
-    let tx = vx[n - 1] - vx[n - 2], ty = vy[n - 1] - vy[n - 2];
-    const tl = Math.hypot(tx, ty);
-    if (tl > 0.0001) { p.tanX = tx / tl; p.tanY = ty / tl; }
-    p.tipX = vx[n - 1]; p.tipY = vy[n - 1];
-    p.mx = vx[n >> 1]; p.my = vy[n >> 1];
-
-    for (const lf of p.leaves) {
-      if (p.g <= lf.f) continue;
-      const grow = reduce ? 1 : backOut((p.g - lf.f) / 0.28);
-      const kk = lf.f * (N - 1), j = Math.min(N - 2, Math.floor(kk)), jf = kk - j;
-      const x = lerp(p.xs[j], p.xs[j + 1], jf), y = lerp(p.ys[j], p.ys[j + 1], jf);
-      const ang = Math.atan2(p.ys[j + 1] - p.ys[j], p.xs[j + 1] - p.xs[j]) + lf.side * lf.ang + (reduce ? 0 : 0.06 * Math.sin(now / 1100 + lf.ph));
-      drawLeaf(x, y, ang, lf.len * R0 * grow, lf.wid, p.dim);
+  for (let j = 0; j < segs; j++) I.push(0, 1 + ((j + 1) % segs), 1 + j);
+  for (let i = 1; i < rings; i++) {
+    const a0 = 1 + (i - 1) * segs, a1 = 1 + i * segs;
+    for (let j = 0; j < segs; j++) {
+      const j1 = (j + 1) % segs;
+      I.push(a0 + j, a0 + j1, a1 + j, a0 + j1, a1 + j1, a1 + j);
     }
   }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2));
+  g.setIndex(I);
+  g.computeVertexNormals();
+  return g;
+}
 
-  function drawLeaf(x, y, ang, l, wid, dim) {
-    if (l < 0.5) return;
-    const w = wid * l;
-    ctx.save();
-    ctx.translate(x, y); ctx.rotate(ang);
-    const g = ctx.createLinearGradient(0, 0, l, 0);
-    g.addColorStop(0, col(LEAF_A, dim, 1)); g.addColorStop(1, col(LEAF_B, dim, 1));
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(l * 0.25, -w, l * 0.68, -w * 0.9, l, 0);
-    ctx.bezierCurveTo(l * 0.62, w * 0.62, l * 0.25, w * 0.72, 0, 0);
-    ctx.fillStyle = g; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(l * 0.04, 0); ctx.quadraticCurveTo(l * 0.5, -w * 0.08, l * 0.9, 0);
-    ctx.strokeStyle = col(LEAF_A, dim * 0.8, 0.55); ctx.lineWidth = 0.6; ctx.stroke();
-    ctx.restore();
-  }
-
-  /* ---------- 3D-ish flower heads */
-  function makeBasis(p, q0) {
-    const T = p.T;
-    const a = lerp(0.95, T.face[0], q0), f = lerp(0.3, T.face[1], q0);
-    let Ax = p.tanX * a + p.jx * q0, Ay = -p.tanY * a, Az = f;
-    let l = Math.hypot(Ax, Ay, Az); Ax /= l; Ay /= l; Az /= l;
-    let Bx = Az, By = 0, Bz = -Ax;
-    l = Math.hypot(Bx, Bz) || 1; Bx /= l; Bz /= l;
-    const Cx = Ay * Bz - Az * By, Cy = Az * Bx - Ax * Bz, Cz = Ax * By - Ay * Bx;
-    return { A: [Ax, Ay, Az], B: [Bx, By, Bz], C: [Cx, Cy, Cz] };
-  }
-
-  const NS_ = 8;
-  function petalGeo(hx, hy, R, bs, phi, theta, L, Wd, curl, cup, pf, cols, shadeMul, layer) {
-    const A = bs.A, B = bs.B, C = bs.C;
-    const cp = Math.cos(phi), sp = Math.sin(phi);
-    const Rx = cp * B[0] + sp * C[0], Ry = cp * B[1] + sp * C[1], Rz = cp * B[2] + sp * C[2];
-    const Tx = -sp * B[0] + cp * C[0], Ty = -sp * B[1] + cp * C[1], Tz = -sp * B[2] + cp * C[2];
-    const r0 = 0.05;
-    let x = Rx * r0, y = Ry * r0, z = Rz * r0;
-    const sx = [x], sy = [y], sz = [z];
-    const step = L / NS_;
-    let mdx = 0, mdy = 0, mdz = 1;
-    for (let i = 1; i <= NS_; i++) {
-      const t = (i - 0.5) / NS_;
-      const th = theta + curl * t * t;
-      const s = Math.sin(th), c = Math.cos(th);
-      const dx = s * Rx + c * A[0], dy = s * Ry + c * A[1], dz = s * Rz + c * A[2];
-      if (i === NS_ >> 1) { mdx = dx; mdy = dy; mdz = dz; }
-      x += dx * step; y += dy * step; z += dz * step;
-      sx.push(x); sy.push(y); sz.push(z);
-    }
-    // inner-face normal = spine x tangent
-    const nx = mdy * Tz - mdz * Ty, ny = mdz * Tx - mdx * Tz, nz = mdx * Ty - mdy * Tx;
-    const front = nz > 0, fs = front ? 1 : -1;
-    const diff = Math.max(0, (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) * fs);
-    const shade = (0.74 + 0.36 * diff) * shadeMul;
-    const Lp = [], Rp = [];
-    for (let i = 0; i < NS_; i++) {
-      const hw = 0.5 * Wd * L * pf(i / NS_);
-      const lift = cup * hw;
-      const ox = Tx * hw, oy = Ty * hw, ux = nx * lift, uy = ny * lift;
-      Lp.push(hx + (sx[i] + ox + ux) * R, hy - (sy[i] + oy + uy) * R);
-      Rp.push(hx + (sx[i] - ox + ux) * R, hy - (sy[i] - oy + uy) * R);
-    }
-    return {
-      Lp, Rp, front, shade, cols, layer,
-      depth: (sz[NS_ >> 1] + sz[NS_]) * 0.5,
-      bx: hx + sx[0] * R, by: hy - sy[0] * R,
-      tx: hx + sx[NS_] * R, ty: hy - sy[NS_] * R
-    };
-  }
-
-  function petalPath(c, g) {
-    const P = g.Lp, Q = g.Rp, n = P.length / 2;
-    c.beginPath();
-    c.moveTo(P[0], P[1]);
-    for (let i = 1; i < n - 1; i++) c.quadraticCurveTo(P[2 * i], P[2 * i + 1], (P[2 * i] + P[2 * i + 2]) / 2, (P[2 * i + 1] + P[2 * i + 3]) / 2);
-    c.lineTo(P[2 * n - 2], P[2 * n - 1]);
-    // rounded tip that passes through the spine tip
-    const mx = (P[2 * n - 2] + Q[2 * n - 2]) / 2, my = (P[2 * n - 1] + Q[2 * n - 1]) / 2;
-    c.quadraticCurveTo(2 * g.tx - mx, 2 * g.ty - my, Q[2 * n - 2], Q[2 * n - 1]);
-    for (let i = n - 2; i > 0; i--) c.quadraticCurveTo(Q[2 * i], Q[2 * i + 1], (Q[2 * i] + Q[2 * i - 2]) / 2, (Q[2 * i + 1] + Q[2 * i - 1]) / 2);
-    c.lineTo(Q[0], Q[1]);
-    c.closePath();
-  }
-
-  function fillPetal(c, g) {
-    const a = g.front ? g.cols[0] : g.cols[2], b = g.front ? g.cols[1] : g.cols[3], f = g.shade;
-    let tx = g.tx, ty = g.ty;
-    if (Math.abs(tx - g.bx) + Math.abs(ty - g.by) < 0.5) ty += 0.5;
-    const gr = c.createLinearGradient(g.bx, g.by, tx, ty);
-    const sat = g.sat == null ? 1 : g.sat;
-    gr.addColorStop(0, tone(a, f * 0.9, sat, 1));
-    gr.addColorStop(1, tone(b, f, sat, 1));
-    c.fillStyle = gr;
-    petalPath(c, g);
-    c.fill();
-    c.strokeStyle = tone(a, f * 0.72, sat, 0.26);
-    c.lineWidth = 0.6;
-    c.stroke();
-  }
-
-  function drawCenter(c, kind, hx, hy, R, bs, k, dim) {
-    const A = bs.A, B = bs.B, C = bs.C, h = 0.05;
-    c.save();
-    c.transform(B[0] * R * k, -B[1] * R * k, C[0] * R * k, -C[1] * R * k, hx + A[0] * h * R, hy - A[1] * h * R);
-    if (kind === "anemone") {
-      c.strokeStyle = col([42, 26, 46], dim, 0.9); c.lineWidth = 0.012;
-      c.beginPath();
-      for (let i = 0; i < 26; i++) { const a = i * TAU / 26 + (i % 2) * 0.07, r = 0.3 + (i % 3) * 0.025; c.moveTo(Math.cos(a) * 0.2, Math.sin(a) * 0.2); c.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
-      c.stroke();
-      c.fillStyle = col([24, 14, 27], dim, 1);
-      for (let i = 0; i < 26; i++) { const a = i * TAU / 26 + (i % 2) * 0.07, r = 0.3 + (i % 3) * 0.025; c.beginPath(); c.arc(Math.cos(a) * r, Math.sin(a) * r, 0.028, 0, TAU); c.fill(); }
-      const g = c.createRadialGradient(-0.06, -0.06, 0, 0, 0, 0.24);
-      g.addColorStop(0, col([84, 58, 96], dim, 1)); g.addColorStop(1, col([18, 10, 20], dim, 1));
-      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.22, 0, TAU); c.fill();
-    } else if (kind === "cosmos") {
-      const g = c.createRadialGradient(0, 0, 0, 0, 0, 0.17);
-      g.addColorStop(0, col([255, 221, 110], dim, 1)); g.addColorStop(1, col([226, 158, 46], dim, 1));
-      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.16, 0, TAU); c.fill();
-      c.fillStyle = col([190, 120, 28], dim, 0.9);
-      for (let i = 0; i < 16; i++) { const a = i * TAU / 16; c.beginPath(); c.arc(Math.cos(a) * 0.12, Math.sin(a) * 0.12, 0.022, 0, TAU); c.fill(); }
-    } else if (kind === "daisy") {
-      const g = c.createRadialGradient(-0.04, -0.04, 0, 0, 0, 0.23);
-      g.addColorStop(0, col([255, 226, 122], dim, 1)); g.addColorStop(1, col([222, 150, 36], dim, 1));
-      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.22, 0, TAU); c.fill();
-      c.fillStyle = col([150, 92, 18], dim, 0.5);
-      for (let i = 1; i < 36; i++) { const r = 0.032 * Math.sqrt(i), a = i * 2.39996; if (r > 0.19) break; c.beginPath(); c.arc(Math.cos(a) * r, Math.sin(a) * r, 0.016, 0, TAU); c.fill(); }
-    }
-    c.restore();
-  }
-
-  function renderHead(c, p, hx, hy, R, bs) {
-    const T = p.T, items = [];
-    let ji = 0;
-    const q0 = clamp(p.qe[0], 0, 1.06);
-    if (T.sepals) {
-      for (let k = 0; k < 5; k++, ji++) {
-        items.push(petalGeo(hx, hy, R, bs, p.rot + 0.35 + (k * TAU) / 5 + p.jit[ji][0], lerp(SEPAL.bud, SEPAL.open, q0) * DEG,
-          SEPAL.L * lerp(0.75, 1, Math.min(q0, 1)) * p.jit[ji][1], SEPAL.W, SEPAL.curl, SEPAL.cup, SEPAL.pf, PAL.green, p.dim, -1));
-      }
-    }
-    for (let li = 0; li < T.layers.length; li++) {
-      const ly = T.layers[li], q = p.qe[li];
-      const ign = smooth(0, 0.8, clamp(q));
-      const twist = p.tw * ((1 - clamp(q)) * (0.85 + 0.3 * li) + p.ft * (0.6 + 0.25 * li));
-      const th = (ly.bud + (ly.open - ly.bud) * q) * DEG;
-      const Ls = ly.L * lerp(ly.bs, 1, Math.min(q, 1.03));
-      const off = ly.off != null ? ly.off : li * 0.63;
-      const curl = ly.curl * (0.35 + 0.65 * clamp(q));
-      for (let k = 0; k < ly.n; k++, ji++) {
-        const g = petalGeo(hx, hy, R, bs, p.rot + off + twist + (k * TAU) / ly.n + p.jit[ji][0], th, Ls * p.jit[ji][1], ly.W, curl, ly.cup, T.pf, p.pal, p.dim * ly.sh * lerp(0.72, 1, ign), li);
-        g.sat = lerp(0.25, 1, ign);
-        items.push(g);
-      }
-    }
-    if (T.sortAll) items.sort((a, b) => a.depth - b.depth);
-    else items.sort((a, b) => a.layer - b.layer || a.depth - b.depth);
-    for (const g of items) fillPetal(c, g);
-    if (T.center) {
-      const k = smooth(0.2, 0.85, clamp(p.qe[0]));
-      if (k > 0) drawCenter(c, T.center, hx, hy, R, bs, k, p.dim);
-    }
-  }
-
-  function drawGlow(p) {
-    if (p.tipX == null) return;
-    const hs = reduce ? 1 : smooth(0.6, 1, p.g);
-    const q0 = clamp(p.q[0]);
-    if (hs <= 0 || q0 <= 0) return;
-    const R0 = baseR(p), s = R0 * 3.6 * hs;
-    ctx.globalAlpha = 0.14 * q0 * (p.back ? 0.35 : 1) * p.fade;
-    ctx.drawImage(glowSprite(p.pal[1]), p.tipX - s / 2, p.tipY - s / 2, s, s);
-  }
-
-  function drawHead(p, now) {
-    if (p.tipX == null) return;
-    const hs = reduce ? 1 : smooth(0.6, 1, p.g);
-    if (hs <= 0.01) return;
-    const R0 = baseR(p), R = R0 * hs;
-    const ang = Math.atan2(p.tanY, p.tanX);
-    ctx.globalAlpha = p.fade;
-
-    if (!p.cache && now > p.bloomEnd && hs >= 1 && !p.flutterAt) {
-      // fully open: bake into a sprite so lots of flowers stay smooth on phones
-      const half = Math.ceil(R0 * 1.55 + 4);
-      const cv = document.createElement("canvas");
-      cv.width = cv.height = Math.ceil(half * 2 * DPR);
-      const c2 = cv.getContext("2d");
-      c2.setTransform(DPR, 0, 0, DPR, 0, 0);
-      renderHead(c2, p, half, half, R0, makeBasis(p, 1));
-      p.cache = { cv, half, ang };
-    }
-    if (p.cache) {
-      const h = p.cache.half;
-      ctx.save();
-      ctx.translate(p.tipX, p.tipY);
-      ctx.rotate(ang - p.cache.ang);
-      ctx.drawImage(p.cache.cv, -h, -h, h * 2, h * 2);
-      ctx.restore();
-    } else {
-      renderHead(ctx, p, p.tipX, p.tipY, R, makeBasis(p, clamp(p.qe[0])));
-    }
-    ctx.globalAlpha = 1;
-
-    if (!p.flashed && p.q[0] > 0.08 && !reduce) {
-      p.flashed = true;
-      bloomFx(p, 1);
-    }
-  }
-
-  /* ------------------------------------------------------------ light: growing sparks, bloom flashes, rings */
-  const rings = [], flashes = [];
-  function bloomFx(p, strength) {
-    const R0 = baseR(p), now = performance.now();
-    rings.push({ p, r0: R0 * 0.5, r1: R0 * (p.back ? 2 : 3), t: now, dur: 1600, c: p.pal[1], a: (p.back ? 0.1 : 0.26) * strength });
-    flashes.push({ p, s: R0 * (p.back ? 3 : 5.2), t: now, dur: 1700, c: p.pal[1], a: (p.back ? 0.22 : 0.42) * strength });
-    burst(p.tipX, p.tipY, Math.round((p.back ? 4 : 12) * strength));
-    // the pulse nudges the flowers around it
-    const D = R0 * 4.5;
-    for (const o of plants) {
-      if (o === p || o.tipX == null) continue;
-      const dx = o.tipX - p.tipX, d = Math.hypot(dx, o.tipY - p.tipY);
-      if (d < D && d > 1) o.v += Math.sign(dx) * 0.55 * (1 - d / D) * strength;
-    }
-  }
-  function ripple(x, y, r1, dur, a) {
-    rings.push({ x, y, r0: 2, r1, t: performance.now(), dur, c: [255, 236, 222], a });
-  }
-  function drawSpark(p, dt) {
-    if (reduce || p.tipX == null || p.g <= 0 || p.g >= 1) return;
-    const a = 1 - smooth(0.8, 1, p.g);
-    if (a <= 0) return;
-    const s = baseR(p) * (p.back ? 0.9 : 1.6);
-    ctx.globalAlpha = a * (p.back ? 0.4 : 0.95) * p.fade;
-    ctx.drawImage(pollenSprite, p.tipX - s / 2, p.tipY - s / 2, s, s);
-    p.sparkAcc += dt * (p.back ? 5 : 16);
-    while (p.sparkAcc > 1) {
-      p.sparkAcc -= 1;
-      if (parts.length < 380) { const m = rand(0.5, 1.1); parts.push({ x: p.tipX + rand(-2, 2), y: p.tipY + rand(-2, 2), vx: rand(-7, 7), vy: rand(-3, 12), s: rand(0.35, 0.85), ph: rand(0, TAU), amb: false, life: m, max: m }); }
-    }
-  }
-  function drawFx(now) {
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = rings.length - 1; i >= 0; i--) {
-      const r = rings[i], u = (now - r.t) / r.dur;
-      if (u >= 1) { rings.splice(i, 1); continue; }
-      const x = r.p ? r.p.tipX : r.x, y = r.p ? r.p.tipY : r.y;
-      const e = 1 - Math.pow(1 - u, 3);
-      ctx.globalAlpha = r.a * Math.pow(1 - u, 2);
-      ctx.strokeStyle = "rgb(" + r.c.join(",") + ")";
-      ctx.lineWidth = 0.5 + 1.5 * (1 - u);
-      ctx.beginPath(); ctx.arc(x, y, lerp(r.r0, r.r1, e), 0, TAU); ctx.stroke();
-    }
-    for (let i = flashes.length - 1; i >= 0; i--) {
-      const f = flashes[i], u = (now - f.t) / f.dur;
-      if (u >= 1) { flashes.splice(i, 1); continue; }
-      const a = u < 0.12 ? u / 0.12 : Math.pow(1 - (u - 0.12) / 0.88, 2);
-      const s = f.s * (0.75 + 0.25 * u);
-      ctx.globalAlpha = f.a * a;
-      ctx.drawImage(glowSprite(f.c), f.p.tipX - s / 2, f.p.tipY - s / 2, s, s);
-    }
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "source-over";
-  }
-
-  /* ------------------------------------------------------------ petals that drift down */
-  const falling = [];
-  let nextShed = 0;
-  function shed(now) {
-    if (reduce || !started || now < nextShed) return;
-    nextShed = now + rand(1600, 3400);
-    if (falling.length > 14) return;
-    const cands = plants.filter((p) => !p.back && !p.dieAt && p.cache && p.type !== "tulip" && p.tipX != null);
-    if (!cands.length) return;
-    const p = pick(cands), R0 = baseR(p), a = rand(0, TAU);
-    falling.push({
-      x: p.tipX + Math.cos(a) * R0 * 0.6, y: p.tipY + Math.sin(a) * R0 * 0.4,
-      vx: rand(-8, 8), vy: rand(4, 10), rot: rand(0, TAU), vr: rand(-1.5, 1.5),
-      fl: rand(0, TAU), vf: rand(2.2, 4.2), size: R0 * rand(0.5, 0.72), cols: p.pal, life: 0
-    });
-  }
-  function drawFalling(now, dt) {
-    for (let i = falling.length - 1; i >= 0; i--) {
-      const f = falling[i];
-      f.life += dt;
-      f.vy = Math.min(f.vy + 10 * dt, 34);
-      f.vx += (wind(now, f.x / W) * 70 - f.vx) * 0.8 * dt;
-      f.x += f.vx * dt + Math.sin(f.life * 1.6 + f.fl) * 12 * dt;
-      f.y += f.vy * dt;
-      f.rot += f.vr * dt; f.fl += f.vf * dt;
-      const fadeOut = 1 - smooth(H * 0.8, H * 0.98, f.y);
-      if (fadeOut <= 0 || f.x < -60 || f.x > W + 60) { falling.splice(i, 1); continue; }
-      let sx = Math.cos(f.fl);
-      const front = sx >= 0;
-      if (Math.abs(sx) < 0.08) sx = front ? 0.08 : -0.08;
-      const s = f.size;
-      ctx.save();
-      ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(sx, 1);
-      ctx.globalAlpha = clamp(f.life / 0.4) * fadeOut;
-      const g = ctx.createLinearGradient(0, s * 0.5, 0, -s * 0.5);
-      g.addColorStop(0, col(front ? f.cols[0] : f.cols[2], 0.92, 1));
-      g.addColorStop(1, col(front ? f.cols[1] : f.cols[3], 1, 1));
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.moveTo(0, s * 0.5);
-      ctx.bezierCurveTo(-s * 0.55, s * 0.1, -s * 0.42, -s * 0.5, 0, -s * 0.5);
-      ctx.bezierCurveTo(s * 0.42, -s * 0.5, s * 0.55, s * 0.1, 0, s * 0.5);
-      ctx.fill();
-      ctx.restore();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  /* ------------------------------------------------------------ pollen */
-  const parts = [];
-  function ambient(n) {
-    for (let i = 0; i < n; i++) parts.push({ x: rand(0, W), y: rand(0, H), vx: 0, vy: -rand(5, 14), s: rand(0.5, 1.5), ph: rand(0, TAU), amb: true, life: 1, max: 1 });
-  }
-  function burst(x, y, n) {
-    for (let i = 0; i < n && parts.length < 320; i++) {
-      const m = rand(1.6, 3);
-      parts.push({ x, y, vx: rand(-22, 22), vy: -rand(10, 45), s: rand(0.6, 1.4), ph: rand(0, TAU), amb: false, life: m, max: m });
-    }
-  }
-  function drawParticles(now, dt) {
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const q = parts[i];
-      if (!reduce) {
-        q.x += (q.vx + Math.sin(now / 1300 + q.ph) * 6) * dt;
-        q.y += q.vy * dt;
-        q.vx *= 0.985;
-      }
-      let a;
-      if (q.amb) {
-        if (q.y < -12) { q.y = H + 12; q.x = rand(0, W); }
-        a = 0.16 + 0.2 * (0.5 + 0.5 * Math.sin(now / 800 + q.ph * 3));
-      } else {
-        q.life -= dt;
-        if (q.life <= 0) { parts.splice(i, 1); continue; }
-        a = 0.85 * clamp(q.life / q.max) * smooth(0, 0.25, q.max - q.life);
-      }
-      const s = q.s * 7;
-      ctx.globalAlpha = a;
-      ctx.drawImage(pollenSprite, q.x - s / 2, q.y - s / 2, s, s);
-    }
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "source-over";
-  }
-
-  /* ------------------------------------------------------------ frame loop */
-  let lastT = performance.now();
-  function frame(now) {
-    const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000));
-    lastT = now;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(bgCanvas, 0, 0, W, H);
-
-    for (const p of plants) update(p, now, dt);
-    if (plants.some((p) => p.dieAt && p.fade <= 0)) plants = plants.filter((p) => !(p.dieAt && p.fade <= 0));
-
-    for (const back of [true, false]) {
-      for (const p of plants) {
-        if (p.back !== back) continue;
-        ctx.globalAlpha = p.fade;
-        drawStem(p, now);
-      }
-      ctx.globalAlpha = 1;
-      if (!back) { ctx.fillStyle = fogGrad; ctx.fillRect(0, H * 0.8, W, H * 0.2); }
-      ctx.globalCompositeOperation = "lighter";
-      for (const p of plants) if (p.back === back) { drawGlow(p); drawSpark(p, dt); }
-      ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = 1;
-      for (const p of plants) if (p.back === back) drawHead(p, now);
-    }
-    drawFalling(now, dt);
-    drawFx(now);
-    drawParticles(now, dt);
-    shed(now);
-    requestAnimationFrame(frame);
-  }
-
-  /* ------------------------------------------------------------ story */
-  let started = false;
-  const later = (fn, ms) => setTimeout(fn, reduce ? 0 : ms);
-
-  function start(x, y) {
-    if (started) return;
-    started = true;
-    ripple(x == null ? W / 2 : x, y == null ? H / 2 : y, S * 0.3, 1800, 0.45);
-    docEl.classList.add("started");
-    measureBand();
-    const T0 = performance.now();
-    const order = LAYOUT.map((o, i) => ({ i, d: Math.hypot(o.x - 0.5, (o.y - 0.5) * 1.2) + (o.back ? 0.25 : 0) }))
-      .sort((a, b) => a.d - b.d);
-    let firstBloom = Infinity, lastBloom = 0;
-    order.forEach((ob, r) => {
-      const o = LAYOUT[ob.i];
-      const p = makePlant({
-        type: o.type, pal: o.pal, x: o.x, y: o.y, s: o.s, back: o.back,
-        rx: 0.5 + (o.x - 0.5) * 0.45 + rand(-0.04, 0.04),
-        born: T0 + 500 + r * 150,
-        growDur: 1900 + (1.04 - o.y) * 1100,
-        bloomDur: o.back ? 1700 : 2000
-      });
-      plants.push(p);
-      firstBloom = Math.min(firstBloom, p.born + p.growDur - T0);
-      lastBloom = Math.max(lastBloom, p.born + p.growDur + 120 + (p.T.maxD + 1) * p.bloomDur - T0);
-    });
-    later(() => $("l1").classList.add("show"), firstBloom + 900);
-    later(() => $("l2").classList.add("show"), firstBloom + 2600);
-    later(() => docEl.classList.add("ready"), lastBloom - 600);
-  }
-
-  let tapped = 0;
-  function growAt(x, y) {
-    const now = performance.now();
-    const yn = clamp(y / H, 0.1, 0.93);
-    const xn = (x - CX0) / CW;
-    ripple(x, y, S * 0.09, 1000, 0.35);
-    plants.push(makePlant({
-      type: pick(["rose", "anemone", "cosmos", "daisy", "tulip", "rose", "cosmos", "anemone"]),
-      x: xn, y: yn, s: rand(0.68, 0.95), raw: true,
-      rx: xn + rand(-0.1, 0.1),
-      born: now, growDur: 1100 + (1.04 - yn) * 900, bloomDur: 1400
-    }));
-    const live = plants.filter((p) => p.raw && !p.dieAt);
-    if (live.length > 30) live[0].dieAt = now;
-    if (++tapped === 2) $("hint").classList.add("gone");
-  }
-
-  /* ------------------------------------------------------------ touch: tap to grow, swipe for a breeze */
-  let down = null, lastP = null;
-  function breeze(x, y, vxp) {
-    const Rb = S * 0.22 + 40;
-    for (const p of plants) {
-      if (p.tipX == null) continue;
-      let d = Math.hypot(x - p.tipX, y - p.tipY);
-      if (p.mx != null) d = Math.min(d, Math.hypot(x - p.mx, y - p.my));
-      if (d < Rb) p.v += clamp(vxp, -4, 4) * 0.09 * (1 - d / Rb) * (p.back ? 0.6 : 1);
-    }
-    for (const f of falling) {
-      const d = Math.hypot(x - f.x, y - f.y);
-      if (d < Rb) { f.vx += clamp(vxp, -4, 4) * 45 * (1 - d / Rb); f.vr += clamp(vxp, -4, 4) * 0.6 * (1 - d / Rb); }
-    }
-  }
-  function hitFlower(x, y) {
-    let best = null, bd = Infinity;
-    for (const p of plants) {
-      if (p.tipX == null || p.dieAt || p.g < 1 || p.q[0] < 0.6) continue;
-      const R0 = baseR(p), up = p.type === "tulip" ? R0 * 0.6 : 0;
-      const d = Math.hypot(x - (p.tipX + p.tanX * up), y - (p.tipY + p.tanY * up)) / R0 + (p.back ? 0.35 : 0);
-      if (d < 1 && d < bd) { bd = d; best = p; }
-    }
-    return best;
-  }
-  function twirl(p) {
-    const now = performance.now();
-    if (p.flutterAt && now - p.flutterAt < 700) return;
-    p.flutterAt = now;
-    p.cache = null;
-    p.v += rand(-0.5, 0.5);
-    bloomFx(p, 0.85);
-  }
-  window.addEventListener("pointerdown", (e) => {
-    if (e.target.closest && e.target.closest("button")) return;
-    down = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
-    lastP = { x: e.clientX, y: e.clientY, t: performance.now() };
+/* ================================================================ materials */
+// petals: vertex colours + velvet sheen, with a saturation dial so buds start grey and colour floods in
+function makePetalMat(tip) {
+  const m = new THREE.MeshPhysicalMaterial({
+    vertexColors: true, side: THREE.DoubleSide, roughness: 0.6, metalness: 0,
+    sheen: 0.35, sheenRoughness: 0.5, sheenColor: new THREE.Color(0xffffff),
+    emissive: new THREE.Color(tip), emissiveIntensity: 0
   });
-  window.addEventListener("pointermove", (e) => {
-    const now = performance.now();
-    if (lastP && started) {
-      const dt = Math.max(8, now - lastP.t);
-      breeze(e.clientX, e.clientY, (e.clientX - lastP.x) / dt);
-      if (down) down.moved += Math.hypot(e.clientX - lastP.x, e.clientY - lastP.y);
-    }
-    lastP = { x: e.clientX, y: e.clientY, t: now };
-  });
-  window.addEventListener("pointerup", (e) => {
-    const d = down; down = null;
-    if (e.pointerType !== "mouse") lastP = null;
-    if (!d) return;
-    if (d.moved < 14 && performance.now() - d.t < 700) {
-      if (!started) start(e.clientX, e.clientY);
-      else { const f = hitFlower(e.clientX, e.clientY); if (f) twirl(f); else growAt(e.clientX, e.clientY); }
-    } else if (started && d.moved > 60) {
-      $("hint").classList.add("gone");
-    }
-  });
-  window.addEventListener("pointercancel", () => { down = null; lastP = null; });
-  window.addEventListener("keydown", (e) => {
-    if (!started && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); start(); }
-  });
+  const uSat = { value: 1 };
+  m.userData.uSat = uSat;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uSat = uSat;
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform float uSat;")
+      .replace("#include <color_fragment>", "#include <color_fragment>\n  diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, uSat);");
+  };
+  m.customProgramCacheKey = () => "petal-sat";
+  return m;
+}
+const sepalMat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.7 });
+const leafMat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.55 });
+const stemMat = new THREE.MeshStandardMaterial({ color: 0x4f7d57, roughness: 0.6 });
+const additive = (color, opacity = 0) => new THREE.SpriteMaterial({
+  map: glowTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false
+});
 
-  /* ------------------------------------------------------------ go */
-  window.addEventListener("resize", resize);
-  resize();
-  ambient(W < 600 ? 34 : 52);
-  requestAnimationFrame(frame);
-})();
+/* ================================================================ the bouquet layout */
+const DOME_C = new THREE.Vector3(0, 0.3, 0), DOME_R = 1.35, TIE_Y = -1.0, BOTTOM_Y = -2.35;
+const SPECS = [
+  { type: "rose",    pal: "blush",  pol: 0,  az: 0,   s: 0.72 },
+  { type: "anemone", pal: "cream",  pol: 33, az: 15,  s: 0.62 },
+  { type: "rose",    pal: "peach",  pol: 33, az: 75,  s: 0.62 },
+  { type: "anemone", pal: "lilac",  pol: 33, az: 135, s: 0.6 },
+  { type: "cosmos",  pal: "lilac",  pol: 33, az: 195, s: 0.61 },
+  { type: "rose",    pal: "coral",  pol: 33, az: 255, s: 0.59 },
+  { type: "daisy",   pal: "white",  pol: 33, az: 315, s: 0.59 },
+  { type: "rose",    pal: "blush",  pol: 64, az: 0,   s: 0.62 },
+  { type: "cosmos",  pal: "peach",  pol: 64, az: 36,  s: 0.58 },
+  { type: "anemone", pal: "coral",  pol: 64, az: 72,  s: 0.59 },
+  { type: "daisy",   pal: "white",  pol: 64, az: 108, s: 0.57 },
+  { type: "rose",    pal: "peach",  pol: 64, az: 144, s: 0.6 },
+  { type: "rose",    pal: "cream",  pol: 64, az: 180, s: 0.61 },
+  { type: "cosmos",  pal: "blush",  pol: 64, az: 216, s: 0.58 },
+  { type: "anemone", pal: "cream",  pol: 64, az: 252, s: 0.59 },
+  { type: "rose",    pal: "butter", pol: 64, az: 288, s: 0.6 },
+  { type: "daisy",   pal: "white",  pol: 64, az: 324, s: 0.57 }
+];
+const dirFrom = (pol, az, v = new THREE.Vector3()) =>
+  v.set(Math.sin(pol * DEG) * Math.sin(az * DEG), Math.cos(pol * DEG), Math.sin(pol * DEG) * Math.cos(az * DEG));
+
+const STEM_SEG = 72, STEM_RAD = 5;
+const flowers = [], pickables = [];
+
+function makeFlower(spec) {
+  const T = TYPES[spec.type];
+  const pol = spec.pol + (spec.pol ? rand(-3, 3) : 0), az = spec.az + rand(-5, 5);
+  const dir = dirFrom(pol, az);
+  const head = DOME_C.clone().addScaledVector(dir, DOME_R + rand(-0.05, 0.05));
+  const axis = spec.type === "tulip" ? dir.clone().lerp(UP, 0.5).normalize() : dir.clone();
+
+  const azr = az * DEG;
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(Math.sin(azr + 2.6) * 0.2, BOTTOM_Y + rand(-0.08, 0.08), Math.cos(azr + 2.6) * 0.2),
+    new THREE.Vector3(Math.sin(azr) * 0.035, TIE_Y, Math.cos(azr) * 0.035),
+    new THREE.Vector3(head.x * 0.32, lerp(TIE_Y, head.y, 0.5), head.z * 0.32),
+    head
+  ], false, "centripetal");
+  const stem = new THREE.Mesh(new THREE.TubeGeometry(curve, STEM_SEG, 0.021, STEM_RAD, false), stemMat);
+  stem.geometry.setDrawRange(0, 0);
+  bouquet.add(stem);
+
+  const f = {
+    spec, T, type: spec.type, s: spec.s, curve, stem, head, axis,
+    qFinal: new THREE.Quaternion().setFromUnitVectors(UP, axis).multiply(new THREE.Quaternion().setFromAxisAngle(UP, rand(0, TAU))),
+    q: T.layers.map(() => 0), petals: [], mat: makePetalMat(PAL[spec.pal][1]),
+    tw: Math.random() < 0.5 ? 1 : -1, ph: rand(0, TAU),
+    sx: 0, sz: 0, vx: 0, vz: 0, flutterAt: 0, flashAt: 0, flashed: false, sparkAcc: 0,
+    born: Infinity, growDur: 2600, bloomDur: 2100, g: 0
+  };
+  f.root = new THREE.Group(); f.root.visible = false;
+  f.bob = new THREE.Group(); f.root.add(f.bob);
+  bouquet.add(f.root);
+
+  const rot = rand(0, TAU);
+  const addPetal = (geo, mat, li, phi, ly) => {
+    const pivot = new THREE.Object3D(), tilt = new THREE.Object3D(), mesh = new THREE.Mesh(geo, mat);
+    tilt.position.set(0, Math.max(0, li) * 0.012, 0.03);
+    tilt.add(mesh); pivot.add(tilt); f.bob.add(pivot);
+    mesh.userData.f = f;
+    f.petals.push({ pivot, tilt, mesh, li, phi, ly, Lj: rand(0.94, 1.06) });
+    pickables.push(mesh);
+  };
+  if (T.sepals) for (let k = 0; k < 5; k++) addPetal(sepalGeo, sepalMat, -1, rot + 0.35 + (k * TAU) / 5, SEPAL);
+  T.layers.forEach((ly, li) => {
+    const geo = petalGeo(spec.type, li, spec.pal);
+    const off = ly.off != null ? ly.off : li * 0.63;
+    for (let k = 0; k < ly.n; k++) addPetal(geo, f.mat, li, rot + off + (k * TAU) / ly.n + rand(-0.09, 0.09), ly);
+  });
+  if (T.center) {
+    f.center = new THREE.Mesh(domeGeo(T.cr, T.ch), new THREE.MeshStandardMaterial({ map: centerTex[T.center], roughness: 0.85 }));
+    f.center.position.y = 0.035;
+    f.center.scale.setScalar(0.0001);
+    f.center.userData.f = f;
+    f.bob.add(f.center);
+    pickables.push(f.center);
+  }
+  const tip = new THREE.Color(PAL[spec.pal][1]);
+  f.glow = new THREE.Sprite(additive(tip)); f.glow.position.y = 0.15; f.glow.scale.setScalar(3); f.root.add(f.glow);
+  f.ring = new THREE.Sprite(additive(tip)); f.ring.material.map = ringTex; f.ring.position.y = 0.15; f.root.add(f.ring);
+  f.spark = new THREE.Sprite(additive(new THREE.Color(0xfff1e0))); f.spark.scale.setScalar(0.42); bouquet.add(f.spark);
+  flowers.push(f);
+  return f;
+}
+SPECS.forEach(makeFlower);
+
+/* leaves: a collar under the flowers plus a few tucked between them */
+const leaves = [];
+function addLeaf(pol, az, outPol, len, wid, fold, droop, delay, rOff) {
+  const anchor = DOME_C.clone().addScaledVector(dirFrom(pol, az), DOME_R * rOff);
+  const Y = dirFrom(outPol, az);
+  const down = new THREE.Vector3(0, -1, 0);
+  const Z = down.addScaledVector(Y, -down.dot(Y)).normalize();
+  const X = new THREE.Vector3().crossVectors(Y, Z);
+  const g = new THREE.Group();
+  g.position.copy(anchor);
+  g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z));
+  const inner = new THREE.Group();
+  const mesh = new THREE.Mesh(buildLeaf(len, wid, fold, droop), leafMat);
+  inner.add(mesh); g.add(inner);
+  inner.scale.setScalar(0.0001);
+  bouquet.add(g);
+  leaves.push({ inner, delay });
+}
+for (let i = 0; i < 9; i++) addLeaf(84, i * 40 + 10 + rand(-6, 6), 100 + rand(-6, 8), rand(1.0, 1.25), rand(0.32, 0.4), 0.35, 0.45, 2700 + i * 90, 0.72);
+for (let i = 0; i < 7; i++) addLeaf(70, i * 51 + 25 + rand(-6, 6), 78 + rand(-5, 5), rand(0.62, 0.78), rand(0.24, 0.3), 0.35, 0.3, 3300 + i * 90, 0.86);
+
+/* baby's breath */
+const BB_SPRIGS = [], BB_PER = 16;
+for (let i = 0; i < 6; i++) BB_SPRIGS.push({ pol: 48, az: i * 60 + 45 });
+for (let i = 0; i < 6; i++) BB_SPRIGS.push({ pol: 76, az: i * 60 + 18 });
+const bbMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(0.024, 8, 6),
+  new THREE.MeshStandardMaterial({ color: 0xfffaf4, roughness: 0.55, emissive: 0x2a2026 }), BB_SPRIGS.length * BB_PER);
+const bbDots = [];
+BB_SPRIGS.forEach((sp, si) => {
+  const d = dirFrom(sp.pol + rand(-3, 3), sp.az + rand(-5, 5));
+  const c = DOME_C.clone().addScaledVector(d, DOME_R + 0.16);
+  for (let k = 0; k < BB_PER; k++) {
+    const p = c.clone().add(new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize().multiplyScalar(rand(0, 0.15))).addScaledVector(d, rand(-0.05, 0.08));
+    bbDots.push({ p, s: rand(0.7, 1.35), delay: si * 110 + k * 22 });
+  }
+});
+const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3();
+function setBB(i, sc) {
+  tmpS.setScalar(Math.max(sc, 0.0001));
+  tmpM.compose(bbDots[i].p, tmpQ.identity(), tmpS);
+  bbMesh.setMatrixAt(i, tmpM);
+}
+bbDots.forEach((_, i) => setBB(i, 0));
+bouquet.add(bbMesh);
+
+/* ribbon tied around the stems */
+const ribbonMat = new THREE.MeshPhysicalMaterial({
+  color: 0xd94a74, roughness: 0.32, sheen: 1, sheenColor: new THREE.Color(0xffc4d6), sheenRoughness: 0.3,
+  clearcoat: 0.5, clearcoatRoughness: 0.35, side: THREE.DoubleSide
+});
+const ribbon = new THREE.Group();
+ribbon.position.y = TIE_Y;
+const band = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.115, 0.15, 40, 1, true), ribbonMat);
+ribbon.add(band);
+const bow = new THREE.Group(); bow.position.set(0, 0.0, 0.12); ribbon.add(bow);
+const loopGeo = new THREE.TorusGeometry(0.15, 0.036, 10, 40);
+for (const sgn of [-1, 1]) {
+  const loop = new THREE.Mesh(loopGeo, ribbonMat);
+  loop.position.set(sgn * 0.14, 0.03, -0.02);
+  loop.scale.set(1.05, 0.58, 0.55);
+  loop.rotation.set(0, sgn * 0.45, sgn * -0.22);
+  bow.add(loop);
+  const tailG = new THREE.PlaneGeometry(0.075, 0.55, 1, 10);
+  const tp = tailG.attributes.position;
+  for (let i = 0; i < tp.count; i++) { const y = tp.getY(i), v = 0.5 - y; tp.setXYZ(i, tp.getX(i) + sgn * v * 0.12, y, Math.sin(v * 5) * 0.03 + v * 0.04); }
+  tailG.computeVertexNormals();
+  const tail = new THREE.Mesh(tailG, ribbonMat);
+  tail.position.set(sgn * 0.04, -0.3, 0.01);
+  tail.rotation.z = sgn * 0.12;
+  bow.add(tail);
+}
+const knot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 12), ribbonMat);
+knot.scale.set(1, 0.85, 0.7); bow.add(knot);
+ribbon.scale.setScalar(0.0001);
+bouquet.add(ribbon);
+
+/* a soft halo that warms up as the bouquet blooms */
+const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(0xff9ab8), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+halo.position.copy(DOME_C).add(new THREE.Vector3(0, 0.2, -0.4));
+halo.scale.setScalar(6.5);
+bouquet.add(halo);
+
+/* ================================================================ particles: pollen, sparks, bursts */
+const AMB = 130, POOL = 420, NP = AMB + POOL;
+const pPos = new Float32Array(NP * 3), pCol = new Float32Array(NP * 3);
+const pts = [];
+for (let i = 0; i < NP; i++) {
+  const amb = i < AMB;
+  pts.push({ amb, x: rand(-3.5, 3.5), y: rand(-3.5, 3.5), z: rand(-3, 3), vx: 0, vy: amb ? rand(0.04, 0.12) : 0, vz: 0, life: amb ? 1 : 0, max: 1, ph: rand(0, TAU), k: rand(0.5, 1) });
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 3));
+const points = new THREE.Points(pGeo, new THREE.PointsMaterial({
+  size: 0.075, map: dotTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
+}));
+points.frustumCulled = false;
+scene.add(points);
+let poolCursor = AMB;
+function emit(x, y, z, vx, vy, vz, life, k) {
+  const p = pts[poolCursor];
+  poolCursor = poolCursor + 1 >= NP ? AMB : poolCursor + 1;
+  Object.assign(p, { x, y, z, vx, vy, vz, life, max: life, k });
+}
+const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3(), tmpT = new THREE.Vector3(), tmpQa = new THREE.Quaternion();
+function burstAt(v, n, speed = 0.55) {
+  for (let i = 0; i < n; i++) {
+    const d = tmpV2.set(rand(-1, 1), rand(-0.3, 1), rand(-1, 1)).normalize().multiplyScalar(rand(0.25, 1) * speed);
+    emit(v.x, v.y, v.z, d.x, d.y + 0.15, d.z, rand(1.4, 2.6), rand(0.7, 1));
+  }
+}
+function updateParticles(now, dt) {
+  const t = now / 1000;
+  for (let i = 0; i < NP; i++) {
+    const p = pts[i];
+    let b = 0;
+    if (p.amb) {
+      if (!reduce) { p.y += p.vy * dt; p.x += Math.sin(t * 0.4 + p.ph) * 0.05 * dt; }
+      if (p.y > 3.6) { p.y = -3.6; p.x = rand(-3.5, 3.5); p.z = rand(-3, 3); }
+      b = 0.22 + 0.22 * (0.5 + 0.5 * Math.sin(t * 1.3 + p.ph * 3));
+    } else if (p.life > 0) {
+      p.life -= dt;
+      p.vx *= 0.97; p.vy = p.vy * 0.97 + 0.02 * dt; p.vz *= 0.97;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+      b = p.k * clamp(p.life / p.max) * smooth(0, 0.15, p.max - p.life);
+    }
+    pPos[i * 3] = p.x; pPos[i * 3 + 1] = p.y; pPos[i * 3 + 2] = p.z;
+    pCol[i * 3] = b; pCol[i * 3 + 1] = b * 0.9; pCol[i * 3 + 2] = b * 0.8;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+  pGeo.attributes.color.needsUpdate = true;
+}
+
+/* ================================================================ falling petals */
+const falling = [];
+let nextShed = 0;
+function shed(now) {
+  if (reduce || !ready || now < nextShed) return;
+  nextShed = now + rand(2200, 4200);
+  if (falling.length > 8) return;
+  const cands = flowers.filter((f) => f.type !== "tulip" && f.q[0] > 0.99);
+  if (!cands.length) return;
+  const f = cands[Math.floor(Math.random() * cands.length)];
+  const outer = f.petals.filter((p) => p.li === 0);
+  const src = outer[Math.floor(Math.random() * outer.length)];
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.6, transparent: true });
+  const m = new THREE.Mesh(src.mesh.geometry, mat);
+  src.mesh.getWorldPosition(m.position);
+  src.mesh.getWorldQuaternion(m.quaternion);
+  src.mesh.getWorldScale(m.scale);
+  scene.add(m);
+  falling.push({ m, vel: new THREE.Vector3(rand(-0.15, 0.15), 0, rand(-0.15, 0.15)), spin: new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize(), w: rand(1.2, 2.4), t: 0 });
+}
+function updateFalling(dt) {
+  for (let i = falling.length - 1; i >= 0; i--) {
+    const f = falling[i];
+    f.t += dt;
+    f.vel.y = Math.max(f.vel.y - 0.35 * dt, -0.42);
+    f.vel.x += Math.sin(f.t * 1.7) * 0.25 * dt;
+    f.m.position.addScaledVector(f.vel, dt);
+    f.m.quaternion.multiply(tmpQa.setFromAxisAngle(f.spin, f.w * dt));
+    f.m.material.opacity = clamp(f.t / 0.3) * (1 - smooth(-2.4, -3.4, f.m.position.y) );
+    if (f.m.position.y < -3.4) { scene.remove(f.m); f.m.material.dispose(); falling.splice(i, 1); }
+  }
+}
+
+/* ================================================================ per-frame flower animation */
+const K = 14, DAMP = 3;
+const qa = new THREE.Quaternion();
+function updateFlower(f, now, dt) {
+  const g = reduce ? 1 : easeInOut((now - f.born) / f.growDur);
+  f.g = g;
+  f.stem.geometry.setDrawRange(0, Math.floor(g * STEM_SEG) * STEM_RAD * 6);
+
+  const gc = Math.max(0.0005, Math.min(g, 0.9995));
+  const hs = reduce ? 1 : smooth(0.5, 0.95, g);
+  f.root.visible = hs > 0.001;
+  if (g < 1) {
+    f.curve.getPointAt(gc, f.root.position);
+    f.curve.getTangentAt(gc, tmpT);
+    qa.setFromUnitVectors(UP, tmpT);
+    f.root.quaternion.copy(qa).slerp(f.qFinal, smooth(0.65, 1, g));
+  } else {
+    f.root.position.copy(f.head);
+    f.root.quaternion.copy(f.qFinal);
+  }
+  f.root.scale.setScalar(Math.max(hs, 0.0001) * f.s);
+
+  // glowing spark that draws the stem
+  const sparkA = reduce ? 0 : (g > 0 && g < 1 ? 1 - smooth(0.82, 1, g) : 0);
+  f.spark.visible = sparkA > 0;
+  if (sparkA > 0) {
+    f.curve.getPointAt(gc, f.spark.position);
+    f.spark.material.opacity = sparkA * 0.95;
+    f.sparkAcc += dt * 18;
+    if (f.sparkAcc > 1) {
+      f.spark.getWorldPosition(tmpV);
+      while (f.sparkAcc > 1) { f.sparkAcc -= 1; emit(tmpV.x + rand(-0.02, 0.02), tmpV.y, tmpV.z + rand(-0.02, 0.02), rand(-0.05, 0.05), rand(-0.12, 0.02), rand(-0.05, 0.05), rand(0.5, 1.1), rand(0.5, 0.9)); }
+    }
+  }
+
+  // bloom (with a twirl when tapped)
+  const bStart = f.born + f.growDur + 100;
+  let ff = 1, ft = 0;
+  if (f.flutterAt) {
+    const u = (now - f.flutterAt) / 1400;
+    if (u >= 1) f.flutterAt = 0;
+    else { const sn = Math.sin(Math.PI * u); ff = 1 - 0.5 * sn; ft = 0.9 * sn; }
+  }
+  for (let i = 0; i < f.q.length; i++) {
+    f.q[i] = reduce ? 1 : backOut((now - bStart - f.T.layers[i].d * f.bloomDur) / f.bloomDur);
+  }
+  const q0 = clamp(f.q[0] * ff, 0, 1.06);
+  for (const p of f.petals) {
+    const li = p.li, q = li < 0 ? q0 : f.q[li] * ff, ly = p.ly;
+    const twist = li < 0 ? 0 : f.tw * ((1 - clamp(q)) * (0.85 + 0.3 * li) + ft * (0.6 + 0.25 * li));
+    p.pivot.rotation.y = p.phi + twist;
+    p.tilt.rotation.x = (ly.bud + (ly.open - ly.bud) * q) * DEG;
+    p.mesh.scale.setScalar(lerp(ly.bs, 1, Math.min(q, 1.03)) * p.Lj);
+  }
+  f.mat.userData.uSat.value = lerp(0.18, 1, smooth(0, 0.75, clamp(f.q[0])));
+  if (f.center) f.center.scale.setScalar(Math.max(0.0001, smooth(0.2, 0.85, q0)));
+
+  if (!f.flashed && f.q[0] > 0.06 && !reduce) { f.flashed = true; bloomFx(f, 1); }
+
+  // light: steady glow + flash + ring
+  let fl = 0, ringU = 1;
+  if (f.flashAt) {
+    const u = (now - f.flashAt) / 1700;
+    if (u >= 1) f.flashAt = 0;
+    else { fl = (u < 0.12 ? u / 0.12 : Math.pow(1 - (u - 0.12) / 0.88, 2)) * f.flashK; ringU = u; }
+  }
+  f.mat.emissiveIntensity = 0.03 * clamp(f.q[0]) + 0.22 * fl;
+  f.glow.material.opacity = 0.07 * clamp(f.q[0]) + 0.26 * fl;
+  f.glow.scale.setScalar(2.2 + 0.8 * fl);
+  f.ring.visible = ringU < 1;
+  if (ringU < 1) {
+    f.ring.material.opacity = 0.2 * Math.pow(1 - ringU, 2) * f.flashK;
+    f.ring.scale.setScalar(lerp(1.2, 4.6, easeOut(ringU)));
+  }
+
+  // springy sway + idle breathing
+  f.vx += (-K * f.sx - DAMP * f.vx) * dt; f.sx += f.vx * dt;
+  f.vz += (-K * f.sz - DAMP * f.vz) * dt; f.sz += f.vz * dt;
+  const t = now / 1000;
+  f.bob.rotation.x = f.sx + (reduce ? 0 : 0.03 * Math.sin(t * 0.9 + f.ph));
+  f.bob.rotation.z = f.sz + (reduce ? 0 : 0.03 * Math.sin(t * 0.7 + f.ph * 2));
+}
+
+function bloomFx(f, k) {
+  f.flashAt = performance.now();
+  f.flashK = k;
+  f.root.getWorldPosition(tmpV);
+  burstAt(tmpV, Math.round(14 * k));
+  // the pulse nudges neighbouring flowers
+  for (const o of flowers) {
+    if (o === f || o.g < 0.6) continue;
+    const d = o.head.distanceTo(f.head);
+    if (d < 1.4) {
+      const push = 0.9 * (1 - d / 1.4) * k;
+      o.vx += (Math.random() < 0.5 ? -1 : 1) * push;
+      o.vz += (Math.random() < 0.5 ? -1 : 1) * push;
+    }
+  }
+}
+
+/* ================================================================ camera fit */
+let W = 1, H = 1, bandTop = 0, fitDist = 12, started = false, ready = false;
+const probe = document.createElement("div");
+probe.style.cssText = "position:fixed;top:0;left:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top)";
+document.body.appendChild(probe);
+const TARGET = new THREE.Vector3(0, -0.2, 0);
+const BOUNDS_H = 4.75, BOUNDS_W = 4.0;
+
+function layout() {
+  W = window.innerWidth; H = window.innerHeight;
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H;
+  const safeTop = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+  const titleH = $("title").offsetHeight;
+  const top = started ? Math.min(H * 0.5, safeTop + (H < 560 ? 14 : 28) + titleH + 4) : H * 0.18;
+  const bottom = started ? 72 : 40;   // room for the P.S. and the hint
+  const availH = Math.max(H * 0.4, H - top - bottom);
+  const tanH = Math.tan((camera.fov * DEG) / 2);
+  fitDist = Math.max(BOUNDS_H / ((availH / H) * 2 * tanH), BOUNDS_W / (0.94 * 2 * tanH * camera.aspect));
+  const shift = top + availH / 2 - H / 2;
+  camera.setViewOffset(W, H, 0, -shift, W, H);
+  camera.updateProjectionMatrix();
+}
+
+/* ================================================================ interaction */
+let yaw = -0.5, pitch = 0, yawVel = 0, dragging = false, lastX = 0, lastY = 0, lastT = 0, downAt = null;
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+
+canvas.addEventListener("pointerdown", (e) => {
+  downAt = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
+  lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+  if (started) dragging = true;
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (!downAt) return;
+  const now = performance.now(), dx = e.clientX - lastX, dy = e.clientY - lastY;
+  downAt.moved += Math.hypot(dx, dy);
+  if (dragging && downAt.moved > 6) {
+    const k = 5.5 / Math.max(W, 320);
+    yaw += dx * k;
+    pitch = clamp(pitch + dy * k * 0.5, -0.32, 0.4);
+    yawVel = (dx * k) / Math.max(0.008, (now - lastT) / 1000);
+    if (downAt.moved > 40) $("hint").classList.add("gone");
+  }
+  lastX = e.clientX; lastY = e.clientY; lastT = now;
+});
+function endPointer(e) {
+  const d = downAt; downAt = null; dragging = false;
+  if (!d) return;
+  if (d.moved < 10 && performance.now() - d.t < 700) {
+    if (!started) start();
+    else tapAt(e.clientX, e.clientY);
+  }
+}
+canvas.addEventListener("pointerup", endPointer);
+canvas.addEventListener("pointercancel", () => { downAt = null; dragging = false; });
+window.addEventListener("keydown", (e) => { if (!started && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); start(); } });
+
+function tapAt(x, y) {
+  ndc.set((x / W) * 2 - 1, -(y / H) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hit = raycaster.intersectObjects(pickables, false)[0];
+  if (hit && hit.object.userData.f) {
+    const f = hit.object.userData.f;
+    if (f.q[0] > 0.6 && (!f.flutterAt || performance.now() - f.flutterAt > 700)) {
+      f.flutterAt = performance.now();
+      f.vx += rand(-0.6, 0.6); f.vz += rand(-0.6, 0.6);
+      bloomFx(f, 0.85);
+    }
+  } else {
+    yawVel += (x < W / 2 ? -1 : 1) * 1.2;   // a tap beside the bouquet gives it a gentle spin
+  }
+}
+
+/* ================================================================ story */
+let T0 = 0;
+const later = (fn, ms) => setTimeout(fn, reduce ? 0 : ms);
+function start() {
+  if (started) return;
+  started = true;
+  docEl.classList.add("started");
+  layout();
+  setTimeout(layout, 1900);
+  T0 = performance.now();
+  const order = flowers.map((f, i) => ({ f, k: f.spec.pol * 10 + ((f.spec.az + 30) % 360) / 40 })).sort((a, b) => a.k - b.k);
+  let firstBloom = Infinity, lastBloom = 0;
+  order.forEach(({ f }, r) => {
+    f.born = T0 + 350 + r * 120;
+    f.growDur = 2500 + rand(-150, 150);
+    f.bloomDur = 2100;
+    firstBloom = Math.min(firstBloom, f.born + f.growDur - T0);
+    lastBloom = Math.max(lastBloom, f.born + f.growDur + 100 + (f.T.maxD + 1) * f.bloomDur - T0);
+  });
+  ribbonAt = T0 + lastBloom - 1600;
+  bbAt = T0 + firstBloom + 900;
+  later(() => $("l1").classList.add("show"), firstBloom + 900);
+  later(() => $("l2").classList.add("show"), firstBloom + 2600);
+  later(() => { docEl.classList.add("ready"); ready = true; }, lastBloom - 300);
+  later(() => $("ps").classList.add("show"), lastBloom + 2200);
+}
+let ribbonAt = Infinity, bbAt = Infinity, bbDone = false;
+
+/* ================================================================ frame loop */
+let prev = performance.now();
+const camPos = new THREE.Vector3();
+function frame(now) {
+  const dt = Math.min(0.05, Math.max(0, (now - prev) / 1000));
+  prev = now;
+  const t = started ? (reduce ? 1e9 : now - T0) : 0;
+
+  // camera: a slow push from close and low to the full bouquet
+  const intro = started ? easeInOut(t / 7800) : 0;
+  const dist = fitDist * lerp(0.62, 1, intro);
+  const el = lerp(0.0, 0.17, intro);
+  camPos.set(0, Math.sin(el) * dist, Math.cos(el) * dist).add(TARGET);
+  camera.position.copy(camPos);
+  camera.lookAt(TARGET);
+
+  // turntable: slow auto rotation, drag with inertia
+  if (!dragging && !reduce) {
+    const base = started ? 0.16 : 0.05;
+    yawVel += (base - yawVel) * Math.min(1, dt * 1.6);
+    yaw += yawVel * dt;
+    pitch += (0 - pitch) * Math.min(1, dt * 0.8);
+  }
+  bouquet.rotation.x = pitch;
+  bouquet.rotation.y = yaw;
+
+  for (const f of flowers) updateFlower(f, now, dt);
+
+  for (const l of leaves) {
+    const u = started ? (reduce ? 1 : (t - l.delay) / 1100) : 0;
+    l.inner.scale.setScalar(Math.max(0.0001, backOut(u)));
+    l.inner.rotation.x = (1 - clamp(u)) * -0.9;
+  }
+
+  if (!bbDone && started) {
+    let all = true;
+    for (let i = 0; i < bbDots.length; i++) {
+      const u = reduce ? 1 : (now - bbAt - bbDots[i].delay) / 500;
+      if (u < 1) all = false;
+      setBB(i, backOut(u) * bbDots[i].s);
+    }
+    bbMesh.instanceMatrix.needsUpdate = true;
+    bbDone = all;
+  }
+
+  const ru = reduce ? 1 : (now - ribbonAt) / 1100;
+  ribbon.scale.setScalar(Math.max(0.0001, backOut(ru)) * 1.35);
+  ribbon.rotation.y = (1 - clamp(ru)) * -2.2;
+
+  let bloomed = 0;
+  for (const f of flowers) bloomed += clamp(f.q[0]);
+  halo.material.opacity = (bloomed / flowers.length) * (0.16 + (reduce ? 0 : 0.03 * Math.sin(now / 1400)));
+
+  shed(now);
+  updateFalling(dt);
+  updateParticles(now, dt);
+  renderer.render(scene, camera);
+}
+
+window.addEventListener("resize", layout);
+layout();
+renderer.setAnimationLoop(frame);
 </script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 # For Clare 💐
 
-A night garden that grows for Clare. Open `index.html` in a browser, or visit the GitHub Pages site.
+A 3D bouquet that grows for Clare. Visit the GitHub Pages site, or serve this folder (`python3 -m http.server`) and open it in a browser.
 
-- Touch to begin: sparks of light draw the stems, buds untwist, and each flower opens in a flash of light
-- Tap empty space to grow another flower up to that spot
+- Touch to begin: sparks of light draw the stems, buds untwist into colour, and each flower opens with a flash of light
+- Drag to spin and tilt the bouquet
 - Tap a flower to make it twirl
-- Swipe across the garden to send a breeze through the flowers and falling petals
 
-Everything lives in `index.html`.
+Files:
+- `index.html` is the 3D bouquet (three.js r160, bundled in `vendor/`)
+- `garden.html` is the earlier 2D night garden; phones without WebGL are sent there automatically
+- `3d/` forwards to the main page

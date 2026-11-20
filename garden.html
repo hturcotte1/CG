@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For Clare</title>
+<meta name="description" content="Something for Clare. Touch to begin.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="for Clare">
+<meta property="og:description" content="Touch to begin.">
+<meta property="og:image" content="https://hturcotte1.github.io/CG/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0c0a0f">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌷</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0a0f;
+    --text: #f4ebe6;
+    --soft: rgba(244, 235, 230, .74);
+    --muted: rgba(244, 235, 230, .46);
+    --ease: cubic-bezier(.6, 0, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    touch-action: none; overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  body { font-family: "Fraunces", Georgia, "Times New Roman", serif; font-weight: 300; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .ui { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+  .title {
+    position: absolute; left: 0; right: 0; top: 50%;
+    transform: translateY(-60%);
+    padding: 0 24px; text-align: center;
+    transition: top 1.8s var(--ease), transform 1.8s var(--ease);
+  }
+  .started .title { top: calc(env(safe-area-inset-top) + 28px); transform: none; }
+  .for {
+    margin: 0; padding-left: .45em;
+    font-size: 11px; letter-spacing: .45em; text-transform: uppercase; color: var(--muted);
+    opacity: 0; animation: rise 1.6s .3s var(--ease) forwards;
+  }
+  h1 {
+    margin: 4px 0 0; font-weight: 300; font-style: italic;
+    font-size: clamp(52px, 14vw, 80px); line-height: 1.05; letter-spacing: -.015em;
+    opacity: 0; animation: rise 1.8s .55s var(--ease) forwards;
+  }
+  .line {
+    margin: 14px auto 0; max-width: 22em;
+    font-size: clamp(15px, 4.1vw, 17.5px); line-height: 1.55; color: var(--soft);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 1.6s ease, transform 1.6s var(--ease);
+  }
+  .line + .line { margin-top: 6px; font-style: italic; }
+  .line.show { opacity: 1; transform: none; }
+
+  .begin {
+    position: absolute; left: 0; right: 0; top: calc(50% + 62px); margin: 0;
+    text-align: center; padding-left: .4em;
+    font-size: 10.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--muted);
+    opacity: 0; animation: rise 1.6s 1.3s var(--ease) forwards, breathe 3.2s 3s ease-in-out infinite;
+    transition: opacity .6s ease;
+  }
+  .started .begin { animation: none; opacity: 0; }
+
+  .foot {
+    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 20px);
+    display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 24px;
+    opacity: 0; transition: opacity 1.8s ease;
+  }
+  .ready .foot { opacity: 1; }
+  .hint {
+    margin: 0; padding-left: .3em; text-align: center;
+    font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+    transition: opacity 1.2s ease;
+  }
+  .hint.gone { opacity: 0; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+  @media (max-height: 560px) {
+    h1 { font-size: clamp(40px, 10vh, 56px); }
+    .line { font-size: 14px; margin-top: 8px; }
+    .started .title { top: calc(env(safe-area-inset-top) + 14px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .for, h1, .begin { animation: none; opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="garden" role="img" aria-label="A night garden where flowers grow and bloom for Clare: roses, anemones, cosmos, daisies and tulips"></canvas>
+
+  <div class="ui" id="ui">
+    <header class="title" id="title">
+      <p class="for">for</p>
+      <h1>Clare</h1>
+      <p class="line" id="l1">Couldn't get you real flowers today,<br>so I grew you some.</p>
+      <p class="line" id="l2">I love you. &nbsp;&mdash; Henry</p>
+    </header>
+
+    <p class="begin" id="begin">touch to begin</p>
+
+    <footer class="foot">
+      <p class="hint" id="hint">tap to grow &nbsp;&middot;&nbsp; swipe for a breeze</p>
+    </footer>
+  </div>
+
+  <noscript><p style="position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#f4ebe6;font-family:Georgia,serif">Turn on JavaScript to see your flowers.</p></noscript>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ------------------------------------------------------------ helpers */
+  const reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("garden");
+  const ctx = canvas.getContext("2d");
+  const docEl = document.documentElement;
+  const TAU = Math.PI * 2, DEG = Math.PI / 180;
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
+  const easeGrow = (x) => 1 - Math.pow(1 - clamp(x), 3);
+  // soft start, gentle overshoot, settle
+  const backOut = (u) => {
+    if (u <= 0) return 0;
+    if (u >= 1) return 1;
+    const s = u * u * (3 - 2 * u) - 1;
+    return 1 + 2.2 * s * s * s + 1.2 * s * s;
+  };
+
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const tone = (c, f, s, a) => {
+    const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+    return "rgba(" + Math.min(255, ((l + (c[0] - l) * s) * f) | 0) + "," + Math.min(255, ((l + (c[1] - l) * s) * f) | 0) + "," +
+      Math.min(255, ((l + (c[2] - l) * s) * f) | 0) + "," + a + ")";
+  };
+  const col = (c, f, a) =>
+    "rgba(" + Math.min(255, (c[0] * f) | 0) + "," + Math.min(255, (c[1] * f) | 0) + "," + Math.min(255, (c[2] * f) | 0) + "," + a + ")";
+
+  /* ------------------------------------------------------------ palettes: front base, front tip, back base, back tip */
+  const PAL = {};
+  Object.entries({
+    blush:  ["#e27a96", "#ffdae3", "#d86d8b", "#f9c6d3"],
+    peach:  ["#ec8c63", "#ffe0c9", "#e0825b", "#fbd3ba"],
+    cream:  ["#e2d2c6", "#fffaf4", "#dbc9bd", "#f8f0ea"],
+    coral:  ["#d6364f", "#ff9395", "#c8304a", "#f5868c"],
+    lilac:  ["#9d82da", "#ede1ff", "#9379d3", "#ddcff9"],
+    butter: ["#e7b23a", "#fff2c2", "#dba633", "#f8e3a0"],
+    white:  ["#e6e0da", "#ffffff", "#ddd6cf", "#f8f5f2"],
+    green:  ["#33603d", "#78a982", "#2c5434", "#5f8f68"]
+  }).forEach(([k, v]) => { PAL[k] = v.map(hex); });
+
+  const STEM = hex("#4d7a56");
+  const LEAF_A = hex("#2c5636"), LEAF_B = hex("#6c9c74");
+  const BG_TOP = [11, 9, 14], BG_BOT = [21, 16, 26];
+
+  /* ------------------------------------------------------------ flower types */
+  // petal width profile: narrow base, widest at m, tip bluntness b
+  const prof = (m, b) => {
+    const a = Math.log(0.5) / Math.log(m);
+    return (t) => (t <= 0 || t >= 1 ? 0 : Math.pow(Math.sin(Math.PI * Math.pow(t, a)), b));
+  };
+
+  const SEPAL = { L: 0.42, W: 0.42, bud: 12, open: 118, curl: 0.3, cup: 0.2, pf: prof(0.35, 0.9) };
+
+  const TYPES = {
+    rose: {
+      face: [0.55, 0.85], size: 1, sepals: true, pf: prof(0.6, 0.5), pals: ["blush", "peach", "cream", "coral"],
+      layers: [
+        { n: 5, L: 1.0,  W: 1.05, bud: 9, open: 96, curl: 0.45,  cup: 0.3,  bs: 0.62, d: 0,    sh: 1 },
+        { n: 5, L: 0.88, W: 1.0,  bud: 6, open: 70, curl: 0.12,  cup: 0.42, bs: 0.36, d: 0.14, sh: 0.97 },
+        { n: 5, L: 0.74, W: 0.95, bud: 4, open: 48, curl: -0.12, cup: 0.5,  bs: 0.22, d: 0.28, sh: 0.94 },
+        { n: 4, L: 0.58, W: 0.9,  bud: 3, open: 30, curl: -0.25, cup: 0.5,  bs: 0.14, d: 0.4,  sh: 0.91 },
+        { n: 3, L: 0.42, W: 0.9,  bud: 2, open: 14, curl: -0.3,  cup: 0.4,  bs: 0.1,  d: 0.5,  sh: 0.88 }
+      ]
+    },
+    anemone: {
+      face: [0.5, 0.9], size: 1, sepals: false, center: "anemone", pf: prof(0.62, 0.42), pals: ["cream", "coral", "lilac", "cream"],
+      layers: [
+        { n: 6, L: 1.0, W: 1.0,  bud: 10, open: 80, curl: 0.12, cup: 0.32, bs: 0.6,  d: 0,    sh: 1 },
+        { n: 5, L: 0.8, W: 0.92, bud: 6,  open: 62, curl: 0.05, cup: 0.38, bs: 0.35, d: 0.12, sh: 0.96 }
+      ]
+    },
+    cosmos: {
+      face: [0.45, 0.9], size: 0.95, sepals: true, center: "cosmos", pf: prof(0.78, 0.32), pals: ["blush", "lilac", "peach", "cream"],
+      layers: [{ n: 8, L: 1.0, W: 0.62, bud: 8, open: 84, curl: 0.12, cup: 0.14, bs: 0.55, d: 0, sh: 1 }]
+    },
+    daisy: {
+      face: [0.45, 0.9], size: 0.85, sepals: true, center: "daisy", pf: prof(0.5, 0.7), pals: ["white"],
+      layers: [
+        { n: 16, L: 1.0,  W: 0.24, bud: 6, open: 86, curl: 0.18, cup: 0.1, bs: 0.5, d: 0,    sh: 1 },
+        { n: 13, L: 0.84, W: 0.22, bud: 5, open: 76, curl: 0.1,  cup: 0.1, bs: 0.4, d: 0.08, sh: 0.95 }
+      ]
+    },
+    tulip: {
+      face: [0.96, 0.28], size: 0.82, sepals: false, sortAll: true, pf: prof(0.5, 0.78), pals: ["coral", "blush", "peach", "butter"],
+      layers: [
+        { n: 3, L: 1.3,  W: 0.85, bud: 5, open: 34, curl: 0.5, cup: 0.55, bs: 0.72, d: 0,    sh: 1 },
+        { n: 3, L: 1.24, W: 0.8,  bud: 3, open: 25, curl: 0.4, cup: 0.55, bs: 0.7,  d: 0.05, sh: 0.94, off: Math.PI / 3 }
+      ]
+    }
+  };
+  Object.values(TYPES).forEach((T) => { T.maxD = Math.max.apply(null, T.layers.map((l) => l.d)); });
+
+  // the opening bouquet (x across a centered composition box, y down the screen)
+  const LAYOUT = [
+    { type: "rose",    pal: "blush", x: 0.50, y: 0.43, s: 1.12 },
+    { type: "anemone", pal: "cream", x: 0.27, y: 0.50, s: 1.0 },
+    { type: "tulip",   pal: "coral", x: 0.73, y: 0.48, s: 1.0 },
+    { type: "cosmos",  pal: "peach", x: 0.13, y: 0.63, s: 0.9 },
+    { type: "daisy",   pal: "white", x: 0.87, y: 0.62, s: 0.9 },
+    { type: "rose",    pal: "peach", x: 0.63, y: 0.64, s: 0.95 },
+    { type: "tulip",   pal: "blush", x: 0.38, y: 0.68, s: 0.85 },
+    { type: "cosmos",  pal: "lilac", x: 0.88, y: 0.41, s: 0.78 },
+    { type: "anemone", pal: "coral", x: 0.11, y: 0.42, s: 0.78 },
+    { type: "daisy",   pal: "white", x: 0.53, y: 0.76, s: 0.72 },
+    { type: "cosmos",  pal: "blush", x: 0.22, y: 0.36, s: 0.58, back: true },
+    { type: "rose",    pal: "blush", x: 0.78, y: 0.34, s: 0.6,  back: true },
+    { type: "cosmos",  pal: "lilac", x: 0.42, y: 0.55, s: 0.55, back: true },
+    { type: "tulip",   pal: "lilac", x: 0.62, y: 0.53, s: 0.55, back: true }
+  ];
+
+  /* ------------------------------------------------------------ canvas sizing */
+  let W = 0, H = 0, DPR = 1, S = 1, CW = 1, CX0 = 0, bandTop = 0, safeTop = 0;
+  let bgCanvas = null, fogGrad = null;
+  const LIGHT = (() => { const v = [-0.35, 0.6, 0.72]; const l = Math.hypot(v[0], v[1], v[2]); return v.map((x) => x / l); })();
+
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;top:0;left:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top)";
+  document.body.appendChild(probe);
+
+  function measureBand() {
+    safeTop = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+    const titleH = $("title").offsetHeight;
+    const pad = H < 560 ? 14 : 28;
+    bandTop = Math.min(H * 0.5, safeTop + pad + titleH + 6);
+  }
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    S = Math.min(W, H);
+    CW = Math.min(W, H * 0.95);
+    CX0 = (W - CW) / 2;
+
+    bgCanvas = document.createElement("canvas");
+    bgCanvas.width = canvas.width; bgCanvas.height = canvas.height;
+    const b = bgCanvas.getContext("2d");
+    b.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const lg = b.createLinearGradient(0, 0, 0, H);
+    lg.addColorStop(0, "rgb(" + BG_TOP + ")"); lg.addColorStop(1, "rgb(" + BG_BOT + ")");
+    b.fillStyle = lg; b.fillRect(0, 0, W, H);
+    const rg = b.createRadialGradient(W / 2, H * 1.05, 0, W / 2, H * 1.05, Math.max(W, H) * 0.75);
+    rg.addColorStop(0, "rgba(120,55,85,.20)"); rg.addColorStop(1, "rgba(120,55,85,0)");
+    b.fillStyle = rg; b.fillRect(0, 0, W, H);
+    const tg = b.createRadialGradient(W / 2, 0, 0, W / 2, 0, Math.max(W * 0.7, 300));
+    tg.addColorStop(0, "rgba(255,225,235,.045)"); tg.addColorStop(1, "rgba(255,225,235,0)");
+    b.fillStyle = tg; b.fillRect(0, 0, W, H);
+
+    fogGrad = ctx.createLinearGradient(0, H * 0.8, 0, H);
+    fogGrad.addColorStop(0, "rgba(" + BG_BOT + ",0)");
+    fogGrad.addColorStop(1, "rgba(" + BG_BOT + ",.92)");
+
+    for (const p of plants) p.cache = null;
+    measureBand();
+  }
+
+  /* ------------------------------------------------------------ sprites */
+  const glowCache = {};
+  function glowSprite(c) {
+    const key = c.join(",");
+    if (glowCache[key]) return glowCache[key];
+    const cv = document.createElement("canvas"); cv.width = cv.height = 96;
+    const g = cv.getContext("2d");
+    const rg = g.createRadialGradient(48, 48, 0, 48, 48, 48);
+    rg.addColorStop(0, "rgba(" + key + ",.9)"); rg.addColorStop(0.35, "rgba(" + key + ",.3)"); rg.addColorStop(1, "rgba(" + key + ",0)");
+    g.fillStyle = rg; g.fillRect(0, 0, 96, 96);
+    return (glowCache[key] = cv);
+  }
+  const pollenSprite = (() => {
+    const cv = document.createElement("canvas"); cv.width = cv.height = 32;
+    const g = cv.getContext("2d");
+    const rg = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    rg.addColorStop(0, "rgba(255,240,220,1)"); rg.addColorStop(0.25, "rgba(255,220,200,.55)"); rg.addColorStop(1, "rgba(255,190,170,0)");
+    g.fillStyle = rg; g.fillRect(0, 0, 32, 32);
+    return cv;
+  })();
+
+  /* ------------------------------------------------------------ plants */
+  let plants = [];
+  const N = 26;
+
+  function makePlant(o) {
+    const T = TYPES[o.type];
+    const palName = o.pal || pick(T.pals);
+    const ry = 1.04;
+    const p0 = [o.rx, ry];
+    const p1 = [o.rx + rand(-0.05, 0.05), lerp(ry, o.y, 0.4)];
+    const p2 = [o.x + rand(-0.06, 0.06), lerp(ry, o.y, 0.75)];
+    const p3 = [o.x, o.y];
+    const nodes = [];
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1), u = 1 - t;
+      const a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+      nodes.push([a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]]);
+    }
+    const nPet = T.layers.reduce((s, l) => s + l.n, 0) + 5;
+    const jit = [];
+    for (let i = 0; i < nPet; i++) jit.push([rand(-0.09, 0.09), rand(0.93, 1.07)]);
+    const leaves = [];
+    const side0 = Math.random() < 0.5 ? 1 : -1;
+    const nl = o.back ? 1 : Math.random() < 0.55 ? 2 : 1;
+    for (let j = 0; j < nl; j++) {
+      leaves.push({ f: rand(0.2, 0.42) + j * 0.2, side: j % 2 ? -side0 : side0, len: rand(1.05, 1.5), wid: rand(0.2, 0.27), ang: rand(0.45, 0.8), ph: rand(0, TAU) });
+    }
+    return {
+      type: o.type, T, pal: PAL[palName], nodes, size: o.s, back: !!o.back, raw: !!o.raw,
+      born: o.born, growDur: o.growDur, bloomDur: o.bloomDur, bloomEnd: Infinity,
+      rot: rand(0, TAU), jx: rand(-0.22, 0.22), jit, leaves,
+      dim: o.back ? 0.6 : 1,
+      q: T.layers.map(() => 0), g: 0, b: 0, v: 0,
+      xs: new Float32Array(N), ys: new Float32Array(N),
+      tipX: null, tipY: null, tanX: 0, tanY: -1, mx: null, my: null,
+      qe: T.layers.map(() => 0), tw: Math.random() < 0.5 ? 1 : -1, ft: 0, flutterAt: 0,
+      flashed: false, sparkAcc: 0, cache: null, dieAt: 0, fade: 1
+    };
+  }
+
+  const baseR = (p) => S * 0.082 * p.size * p.T.size;
+  const mapX = (xn) => CX0 + xn * CW;
+  const mapY = (p, yn) => (p.raw ? yn * H : H - ((1 - yn) * (H - bandTop)) / 0.7);
+
+  function wind(now, x) {
+    if (reduce) return 0;
+    const t = now / 1000;
+    return 0.05 * Math.sin(t * 0.9 + x * 2.2) + 0.025 * Math.sin(t * 1.7 + x * 4.1 + 1.3) + 0.012 * Math.sin(t * 3.3 + x * 7.7 + 0.4);
+  }
+
+  const K = 16, DAMP = 2.4;
+  function update(p, now, dt) {
+    const T = p.T;
+    const bStart = p.born + p.growDur + 120;
+    if (reduce) { p.g = 1; for (let i = 0; i < p.q.length; i++) p.q[i] = 1; }
+    else {
+      p.g = easeGrow((now - p.born) / p.growDur);
+      for (let i = 0; i < T.layers.length; i++) p.q[i] = backOut((now - bStart - T.layers[i].d * p.bloomDur) / p.bloomDur);
+    }
+    p.bloomEnd = reduce ? 0 : bStart + (T.maxD + 1) * p.bloomDur + 60;
+    p.v += (-K * p.b - DAMP * p.v) * dt;
+    p.b = clamp(p.b + p.v * dt, -0.55, 0.55);
+    p.fade = p.dieAt ? clamp(1 - (now - p.dieAt) / 1200) : 1;
+
+    // tapped flowers close part way and twirl back open
+    let ff = 1;
+    p.ft = 0;
+    if (p.flutterAt) {
+      const u = (now - p.flutterAt) / 1300;
+      if (u >= 1) p.flutterAt = 0;
+      else { const sn = Math.sin(Math.PI * u); ff = 1 - 0.45 * sn; p.ft = 0.75 * sn; }
+    }
+    for (let i = 0; i < p.q.length; i++) p.qe[i] = p.q[i] * ff;
+
+    // sway the stem: rest shape + wind + touch breeze
+    let Lpx = 0, px = 0, py = 0;
+    for (let i = 0; i < N; i++) {
+      const x = mapX(p.nodes[i][0]), y = mapY(p, p.nodes[i][1]);
+      if (i) Lpx += Math.hypot(x - px, y - py);
+      p.xs[i] = x; p.ys[i] = y; px = x; py = y;
+    }
+    const seek = reduce ? 0 : (1 - p.g) * 0.13 * Math.sin(now / 420 + p.rot * 3);   // growing tips search side to side
+    const bend = wind(now, p.nodes[N - 1][0]) * (p.back ? 0.7 : 1) + p.b + seek;
+    const sb = Math.sin(bend), cb = 1 - Math.cos(bend);
+    for (let i = 0; i < N; i++) {
+      const s = i / (N - 1), f = s * s;
+      p.xs[i] += sb * Lpx * f * 0.55;
+      p.ys[i] += cb * Lpx * f * 0.3;
+    }
+  }
+
+  /* ---------- stem + leaves */
+  const vx = new Float32Array(N + 1), vy = new Float32Array(N + 1);
+  const lx = new Float32Array(N + 1), ly = new Float32Array(N + 1), rx = new Float32Array(N + 1), ry = new Float32Array(N + 1);
+
+  function drawStem(p, now) {
+    const k = p.g * (N - 1);
+    if (k <= 0.02) return;
+    const i0 = Math.floor(k), fr = k - i0;
+    let n = 0;
+    for (let i = 0; i <= i0 && i < N; i++) { vx[n] = p.xs[i]; vy[n] = p.ys[i]; n++; }
+    if (i0 < N - 1 && fr > 0.001) { vx[n] = lerp(p.xs[i0], p.xs[i0 + 1], fr); vy[n] = lerp(p.ys[i0], p.ys[i0 + 1], fr); n++; }
+    if (n < 2) return;
+    const R0 = baseR(p);
+    const w0 = Math.max(0.8, R0 * 0.045);
+    for (let i = 0; i < n; i++) {
+      const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
+      let tx = vx[b] - vx[a], ty = vy[b] - vy[a];
+      const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+      const s = Math.min(i, k) / (N - 1);
+      const hw = w0 * (1 - 0.55 * s);
+      lx[i] = vx[i] - ty * hw; ly[i] = vy[i] + tx * hw;
+      rx[i] = vx[i] + ty * hw; ry[i] = vy[i] - tx * hw;
+    }
+    ctx.beginPath();
+    ctx.moveTo(lx[0], ly[0]);
+    for (let i = 1; i < n; i++) ctx.lineTo(lx[i], ly[i]);
+    for (let i = n - 1; i >= 0; i--) ctx.lineTo(rx[i], ry[i]);
+    ctx.closePath();
+    ctx.fillStyle = col(STEM, p.dim, 1);
+    ctx.fill();
+
+    let tx = vx[n - 1] - vx[n - 2], ty = vy[n - 1] - vy[n - 2];
+    const tl = Math.hypot(tx, ty);
+    if (tl > 0.0001) { p.tanX = tx / tl; p.tanY = ty / tl; }
+    p.tipX = vx[n - 1]; p.tipY = vy[n - 1];
+    p.mx = vx[n >> 1]; p.my = vy[n >> 1];
+
+    for (const lf of p.leaves) {
+      if (p.g <= lf.f) continue;
+      const grow = reduce ? 1 : backOut((p.g - lf.f) / 0.28);
+      const kk = lf.f * (N - 1), j = Math.min(N - 2, Math.floor(kk)), jf = kk - j;
+      const x = lerp(p.xs[j], p.xs[j + 1], jf), y = lerp(p.ys[j], p.ys[j + 1], jf);
+      const ang = Math.atan2(p.ys[j + 1] - p.ys[j], p.xs[j + 1] - p.xs[j]) + lf.side * lf.ang + (reduce ? 0 : 0.06 * Math.sin(now / 1100 + lf.ph));
+      drawLeaf(x, y, ang, lf.len * R0 * grow, lf.wid, p.dim);
+    }
+  }
+
+  function drawLeaf(x, y, ang, l, wid, dim) {
+    if (l < 0.5) return;
+    const w = wid * l;
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(ang);
+    const g = ctx.createLinearGradient(0, 0, l, 0);
+    g.addColorStop(0, col(LEAF_A, dim, 1)); g.addColorStop(1, col(LEAF_B, dim, 1));
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(l * 0.25, -w, l * 0.68, -w * 0.9, l, 0);
+    ctx.bezierCurveTo(l * 0.62, w * 0.62, l * 0.25, w * 0.72, 0, 0);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(l * 0.04, 0); ctx.quadraticCurveTo(l * 0.5, -w * 0.08, l * 0.9, 0);
+    ctx.strokeStyle = col(LEAF_A, dim * 0.8, 0.55); ctx.lineWidth = 0.6; ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- 3D-ish flower heads */
+  function makeBasis(p, q0) {
+    const T = p.T;
+    const a = lerp(0.95, T.face[0], q0), f = lerp(0.3, T.face[1], q0);
+    let Ax = p.tanX * a + p.jx * q0, Ay = -p.tanY * a, Az = f;
+    let l = Math.hypot(Ax, Ay, Az); Ax /= l; Ay /= l; Az /= l;
+    let Bx = Az, By = 0, Bz = -Ax;
+    l = Math.hypot(Bx, Bz) || 1; Bx /= l; Bz /= l;
+    const Cx = Ay * Bz - Az * By, Cy = Az * Bx - Ax * Bz, Cz = Ax * By - Ay * Bx;
+    return { A: [Ax, Ay, Az], B: [Bx, By, Bz], C: [Cx, Cy, Cz] };
+  }
+
+  const NS_ = 8;
+  function petalGeo(hx, hy, R, bs, phi, theta, L, Wd, curl, cup, pf, cols, shadeMul, layer) {
+    const A = bs.A, B = bs.B, C = bs.C;
+    const cp = Math.cos(phi), sp = Math.sin(phi);
+    const Rx = cp * B[0] + sp * C[0], Ry = cp * B[1] + sp * C[1], Rz = cp * B[2] + sp * C[2];
+    const Tx = -sp * B[0] + cp * C[0], Ty = -sp * B[1] + cp * C[1], Tz = -sp * B[2] + cp * C[2];
+    const r0 = 0.05;
+    let x = Rx * r0, y = Ry * r0, z = Rz * r0;
+    const sx = [x], sy = [y], sz = [z];
+    const step = L / NS_;
+    let mdx = 0, mdy = 0, mdz = 1;
+    for (let i = 1; i <= NS_; i++) {
+      const t = (i - 0.5) / NS_;
+      const th = theta + curl * t * t;
+      const s = Math.sin(th), c = Math.cos(th);
+      const dx = s * Rx + c * A[0], dy = s * Ry + c * A[1], dz = s * Rz + c * A[2];
+      if (i === NS_ >> 1) { mdx = dx; mdy = dy; mdz = dz; }
+      x += dx * step; y += dy * step; z += dz * step;
+      sx.push(x); sy.push(y); sz.push(z);
+    }
+    // inner-face normal = spine x tangent
+    const nx = mdy * Tz - mdz * Ty, ny = mdz * Tx - mdx * Tz, nz = mdx * Ty - mdy * Tx;
+    const front = nz > 0, fs = front ? 1 : -1;
+    const diff = Math.max(0, (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) * fs);
+    const shade = (0.74 + 0.36 * diff) * shadeMul;
+    const Lp = [], Rp = [];
+    for (let i = 0; i < NS_; i++) {
+      const hw = 0.5 * Wd * L * pf(i / NS_);
+      const lift = cup * hw;
+      const ox = Tx * hw, oy = Ty * hw, ux = nx * lift, uy = ny * lift;
+      Lp.push(hx + (sx[i] + ox + ux) * R, hy - (sy[i] + oy + uy) * R);
+      Rp.push(hx + (sx[i] - ox + ux) * R, hy - (sy[i] - oy + uy) * R);
+    }
+    return {
+      Lp, Rp, front, shade, cols, layer,
+      depth: (sz[NS_ >> 1] + sz[NS_]) * 0.5,
+      bx: hx + sx[0] * R, by: hy - sy[0] * R,
+      tx: hx + sx[NS_] * R, ty: hy - sy[NS_] * R
+    };
+  }
+
+  function petalPath(c, g) {
+    const P = g.Lp, Q = g.Rp, n = P.length / 2;
+    c.beginPath();
+    c.moveTo(P[0], P[1]);
+    for (let i = 1; i < n - 1; i++) c.quadraticCurveTo(P[2 * i], P[2 * i + 1], (P[2 * i] + P[2 * i + 2]) / 2, (P[2 * i + 1] + P[2 * i + 3]) / 2);
+    c.lineTo(P[2 * n - 2], P[2 * n - 1]);
+    // rounded tip that passes through the spine tip
+    const mx = (P[2 * n - 2] + Q[2 * n - 2]) / 2, my = (P[2 * n - 1] + Q[2 * n - 1]) / 2;
+    c.quadraticCurveTo(2 * g.tx - mx, 2 * g.ty - my, Q[2 * n - 2], Q[2 * n - 1]);
+    for (let i = n - 2; i > 0; i--) c.quadraticCurveTo(Q[2 * i], Q[2 * i + 1], (Q[2 * i] + Q[2 * i - 2]) / 2, (Q[2 * i + 1] + Q[2 * i - 1]) / 2);
+    c.lineTo(Q[0], Q[1]);
+    c.closePath();
+  }
+
+  function fillPetal(c, g) {
+    const a = g.front ? g.cols[0] : g.cols[2], b = g.front ? g.cols[1] : g.cols[3], f = g.shade;
+    let tx = g.tx, ty = g.ty;
+    if (Math.abs(tx - g.bx) + Math.abs(ty - g.by) < 0.5) ty += 0.5;
+    const gr = c.createLinearGradient(g.bx, g.by, tx, ty);
+    const sat = g.sat == null ? 1 : g.sat;
+    gr.addColorStop(0, tone(a, f * 0.9, sat, 1));
+    gr.addColorStop(1, tone(b, f, sat, 1));
+    c.fillStyle = gr;
+    petalPath(c, g);
+    c.fill();
+    c.strokeStyle = tone(a, f * 0.72, sat, 0.26);
+    c.lineWidth = 0.6;
+    c.stroke();
+  }
+
+  function drawCenter(c, kind, hx, hy, R, bs, k, dim) {
+    const A = bs.A, B = bs.B, C = bs.C, h = 0.05;
+    c.save();
+    c.transform(B[0] * R * k, -B[1] * R * k, C[0] * R * k, -C[1] * R * k, hx + A[0] * h * R, hy - A[1] * h * R);
+    if (kind === "anemone") {
+      c.strokeStyle = col([42, 26, 46], dim, 0.9); c.lineWidth = 0.012;
+      c.beginPath();
+      for (let i = 0; i < 26; i++) { const a = i * TAU / 26 + (i % 2) * 0.07, r = 0.3 + (i % 3) * 0.025; c.moveTo(Math.cos(a) * 0.2, Math.sin(a) * 0.2); c.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+      c.stroke();
+      c.fillStyle = col([24, 14, 27], dim, 1);
+      for (let i = 0; i < 26; i++) { const a = i * TAU / 26 + (i % 2) * 0.07, r = 0.3 + (i % 3) * 0.025; c.beginPath(); c.arc(Math.cos(a) * r, Math.sin(a) * r, 0.028, 0, TAU); c.fill(); }
+      const g = c.createRadialGradient(-0.06, -0.06, 0, 0, 0, 0.24);
+      g.addColorStop(0, col([84, 58, 96], dim, 1)); g.addColorStop(1, col([18, 10, 20], dim, 1));
+      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.22, 0, TAU); c.fill();
+    } else if (kind === "cosmos") {
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, 0.17);
+      g.addColorStop(0, col([255, 221, 110], dim, 1)); g.addColorStop(1, col([226, 158, 46], dim, 1));
+      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.16, 0, TAU); c.fill();
+      c.fillStyle = col([190, 120, 28], dim, 0.9);
+      for (let i = 0; i < 16; i++) { const a = i * TAU / 16; c.beginPath(); c.arc(Math.cos(a) * 0.12, Math.sin(a) * 0.12, 0.022, 0, TAU); c.fill(); }
+    } else if (kind === "daisy") {
+      const g = c.createRadialGradient(-0.04, -0.04, 0, 0, 0, 0.23);
+      g.addColorStop(0, col([255, 226, 122], dim, 1)); g.addColorStop(1, col([222, 150, 36], dim, 1));
+      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.22, 0, TAU); c.fill();
+      c.fillStyle = col([150, 92, 18], dim, 0.5);
+      for (let i = 1; i < 36; i++) { const r = 0.032 * Math.sqrt(i), a = i * 2.39996; if (r > 0.19) break; c.beginPath(); c.arc(Math.cos(a) * r, Math.sin(a) * r, 0.016, 0, TAU); c.fill(); }
+    }
+    c.restore();
+  }
+
+  function renderHead(c, p, hx, hy, R, bs) {
+    const T = p.T, items = [];
+    let ji = 0;
+    const q0 = clamp(p.qe[0], 0, 1.06);
+    if (T.sepals) {
+      for (let k = 0; k < 5; k++, ji++) {
+        items.push(petalGeo(hx, hy, R, bs, p.rot + 0.35 + (k * TAU) / 5 + p.jit[ji][0], lerp(SEPAL.bud, SEPAL.open, q0) * DEG,
+          SEPAL.L * lerp(0.75, 1, Math.min(q0, 1)) * p.jit[ji][1], SEPAL.W, SEPAL.curl, SEPAL.cup, SEPAL.pf, PAL.green, p.dim, -1));
+      }
+    }
+    for (let li = 0; li < T.layers.length; li++) {
+      const ly = T.layers[li], q = p.qe[li];
+      const ign = smooth(0, 0.8, clamp(q));
+      const twist = p.tw * ((1 - clamp(q)) * (0.85 + 0.3 * li) + p.ft * (0.6 + 0.25 * li));
+      const th = (ly.bud + (ly.open - ly.bud) * q) * DEG;
+      const Ls = ly.L * lerp(ly.bs, 1, Math.min(q, 1.03));
+      const off = ly.off != null ? ly.off : li * 0.63;
+      const curl = ly.curl * (0.35 + 0.65 * clamp(q));
+      for (let k = 0; k < ly.n; k++, ji++) {
+        const g = petalGeo(hx, hy, R, bs, p.rot + off + twist + (k * TAU) / ly.n + p.jit[ji][0], th, Ls * p.jit[ji][1], ly.W, curl, ly.cup, T.pf, p.pal, p.dim * ly.sh * lerp(0.72, 1, ign), li);
+        g.sat = lerp(0.25, 1, ign);
+        items.push(g);
+      }
+    }
+    if (T.sortAll) items.sort((a, b) => a.depth - b.depth);
+    else items.sort((a, b) => a.layer - b.layer || a.depth - b.depth);
+    for (const g of items) fillPetal(c, g);
+    if (T.center) {
+      const k = smooth(0.2, 0.85, clamp(p.qe[0]));
+      if (k > 0) drawCenter(c, T.center, hx, hy, R, bs, k, p.dim);
+    }
+  }
+
+  function drawGlow(p) {
+    if (p.tipX == null) return;
+    const hs = reduce ? 1 : smooth(0.6, 1, p.g);
+    const q0 = clamp(p.q[0]);
+    if (hs <= 0 || q0 <= 0) return;
+    const R0 = baseR(p), s = R0 * 3.6 * hs;
+    ctx.globalAlpha = 0.14 * q0 * (p.back ? 0.35 : 1) * p.fade;
+    ctx.drawImage(glowSprite(p.pal[1]), p.tipX - s / 2, p.tipY - s / 2, s, s);
+  }
+
+  function drawHead(p, now) {
+    if (p.tipX == null) return;
+    const hs = reduce ? 1 : smooth(0.6, 1, p.g);
+    if (hs <= 0.01) return;
+    const R0 = baseR(p), R = R0 * hs;
+    const ang = Math.atan2(p.tanY, p.tanX);
+    ctx.globalAlpha = p.fade;
+
+    if (!p.cache && now > p.bloomEnd && hs >= 1 && !p.flutterAt) {
+      // fully open: bake into a sprite so lots of flowers stay smooth on phones
+      const half = Math.ceil(R0 * 1.55 + 4);
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = Math.ceil(half * 2 * DPR);
+      const c2 = cv.getContext("2d");
+      c2.setTransform(DPR, 0, 0, DPR, 0, 0);
+      renderHead(c2, p, half, half, R0, makeBasis(p, 1));
+      p.cache = { cv, half, ang };
+    }
+    if (p.cache) {
+      const h = p.cache.half;
+      ctx.save();
+      ctx.translate(p.tipX, p.tipY);
+      ctx.rotate(ang - p.cache.ang);
+      ctx.drawImage(p.cache.cv, -h, -h, h * 2, h * 2);
+      ctx.restore();
+    } else {
+      renderHead(ctx, p, p.tipX, p.tipY, R, makeBasis(p, clamp(p.qe[0])));
+    }
+    ctx.globalAlpha = 1;
+
+    if (!p.flashed && p.q[0] > 0.08 && !reduce) {
+      p.flashed = true;
+      bloomFx(p, 1);
+    }
+  }
+
+  /* ------------------------------------------------------------ light: growing sparks, bloom flashes, rings */
+  const rings = [], flashes = [];
+  function bloomFx(p, strength) {
+    const R0 = baseR(p), now = performance.now();
+    rings.push({ p, r0: R0 * 0.5, r1: R0 * (p.back ? 2 : 3), t: now, dur: 1600, c: p.pal[1], a: (p.back ? 0.1 : 0.26) * strength });
+    flashes.push({ p, s: R0 * (p.back ? 3 : 5.2), t: now, dur: 1700, c: p.pal[1], a: (p.back ? 0.22 : 0.42) * strength });
+    burst(p.tipX, p.tipY, Math.round((p.back ? 4 : 12) * strength));
+    // the pulse nudges the flowers around it
+    const D = R0 * 4.5;
+    for (const o of plants) {
+      if (o === p || o.tipX == null) continue;
+      const dx = o.tipX - p.tipX, d = Math.hypot(dx, o.tipY - p.tipY);
+      if (d < D && d > 1) o.v += Math.sign(dx) * 0.55 * (1 - d / D) * strength;
+    }
+  }
+  function ripple(x, y, r1, dur, a) {
+    rings.push({ x, y, r0: 2, r1, t: performance.now(), dur, c: [255, 236, 222], a });
+  }
+  function drawSpark(p, dt) {
+    if (reduce || p.tipX == null || p.g <= 0 || p.g >= 1) return;
+    const a = 1 - smooth(0.8, 1, p.g);
+    if (a <= 0) return;
+    const s = baseR(p) * (p.back ? 0.9 : 1.6);
+    ctx.globalAlpha = a * (p.back ? 0.4 : 0.95) * p.fade;
+    ctx.drawImage(pollenSprite, p.tipX - s / 2, p.tipY - s / 2, s, s);
+    p.sparkAcc += dt * (p.back ? 5 : 16);
+    while (p.sparkAcc > 1) {
+      p.sparkAcc -= 1;
+      if (parts.length < 380) { const m = rand(0.5, 1.1); parts.push({ x: p.tipX + rand(-2, 2), y: p.tipY + rand(-2, 2), vx: rand(-7, 7), vy: rand(-3, 12), s: rand(0.35, 0.85), ph: rand(0, TAU), amb: false, life: m, max: m }); }
+    }
+  }
+  function drawFx(now) {
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const r = rings[i], u = (now - r.t) / r.dur;
+      if (u >= 1) { rings.splice(i, 1); continue; }
+      const x = r.p ? r.p.tipX : r.x, y = r.p ? r.p.tipY : r.y;
+      const e = 1 - Math.pow(1 - u, 3);
+      ctx.globalAlpha = r.a * Math.pow(1 - u, 2);
+      ctx.strokeStyle = "rgb(" + r.c.join(",") + ")";
+      ctx.lineWidth = 0.5 + 1.5 * (1 - u);
+      ctx.beginPath(); ctx.arc(x, y, lerp(r.r0, r.r1, e), 0, TAU); ctx.stroke();
+    }
+    for (let i = flashes.length - 1; i >= 0; i--) {
+      const f = flashes[i], u = (now - f.t) / f.dur;
+      if (u >= 1) { flashes.splice(i, 1); continue; }
+      const a = u < 0.12 ? u / 0.12 : Math.pow(1 - (u - 0.12) / 0.88, 2);
+      const s = f.s * (0.75 + 0.25 * u);
+      ctx.globalAlpha = f.a * a;
+      ctx.drawImage(glowSprite(f.c), f.p.tipX - s / 2, f.p.tipY - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  /* ------------------------------------------------------------ petals that drift down */
+  const falling = [];
+  let nextShed = 0;
+  function shed(now) {
+    if (reduce || !started || now < nextShed) return;
+    nextShed = now + rand(1600, 3400);
+    if (falling.length > 14) return;
+    const cands = plants.filter((p) => !p.back && !p.dieAt && p.cache && p.type !== "tulip" && p.tipX != null);
+    if (!cands.length) return;
+    const p = pick(cands), R0 = baseR(p), a = rand(0, TAU);
+    falling.push({
+      x: p.tipX + Math.cos(a) * R0 * 0.6, y: p.tipY + Math.sin(a) * R0 * 0.4,
+      vx: rand(-8, 8), vy: rand(4, 10), rot: rand(0, TAU), vr: rand(-1.5, 1.5),
+      fl: rand(0, TAU), vf: rand(2.2, 4.2), size: R0 * rand(0.5, 0.72), cols: p.pal, life: 0
+    });
+  }
+  function drawFalling(now, dt) {
+    for (let i = falling.length - 1; i >= 0; i--) {
+      const f = falling[i];
+      f.life += dt;
+      f.vy = Math.min(f.vy + 10 * dt, 34);
+      f.vx += (wind(now, f.x / W) * 70 - f.vx) * 0.8 * dt;
+      f.x += f.vx * dt + Math.sin(f.life * 1.6 + f.fl) * 12 * dt;
+      f.y += f.vy * dt;
+      f.rot += f.vr * dt; f.fl += f.vf * dt;
+      const fadeOut = 1 - smooth(H * 0.8, H * 0.98, f.y);
+      if (fadeOut <= 0 || f.x < -60 || f.x > W + 60) { falling.splice(i, 1); continue; }
+      let sx = Math.cos(f.fl);
+      const front = sx >= 0;
+      if (Math.abs(sx) < 0.08) sx = front ? 0.08 : -0.08;
+      const s = f.size;
+      ctx.save();
+      ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(sx, 1);
+      ctx.globalAlpha = clamp(f.life / 0.4) * fadeOut;
+      const g = ctx.createLinearGradient(0, s * 0.5, 0, -s * 0.5);
+      g.addColorStop(0, col(front ? f.cols[0] : f.cols[2], 0.92, 1));
+      g.addColorStop(1, col(front ? f.cols[1] : f.cols[3], 1, 1));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0, s * 0.5);
+      ctx.bezierCurveTo(-s * 0.55, s * 0.1, -s * 0.42, -s * 0.5, 0, -s * 0.5);
+      ctx.bezierCurveTo(s * 0.42, -s * 0.5, s * 0.55, s * 0.1, 0, s * 0.5);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ------------------------------------------------------------ pollen */
+  const parts = [];
+  function ambient(n) {
+    for (let i = 0; i < n; i++) parts.push({ x: rand(0, W), y: rand(0, H), vx: 0, vy: -rand(5, 14), s: rand(0.5, 1.5), ph: rand(0, TAU), amb: true, life: 1, max: 1 });
+  }
+  function burst(x, y, n) {
+    for (let i = 0; i < n && parts.length < 320; i++) {
+      const m = rand(1.6, 3);
+      parts.push({ x, y, vx: rand(-22, 22), vy: -rand(10, 45), s: rand(0.6, 1.4), ph: rand(0, TAU), amb: false, life: m, max: m });
+    }
+  }
+  function drawParticles(now, dt) {
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const q = parts[i];
+      if (!reduce) {
+        q.x += (q.vx + Math.sin(now / 1300 + q.ph) * 6) * dt;
+        q.y += q.vy * dt;
+        q.vx *= 0.985;
+      }
+      let a;
+      if (q.amb) {
+        if (q.y < -12) { q.y = H + 12; q.x = rand(0, W); }
+        a = 0.16 + 0.2 * (0.5 + 0.5 * Math.sin(now / 800 + q.ph * 3));
+      } else {
+        q.life -= dt;
+        if (q.life <= 0) { parts.splice(i, 1); continue; }
+        a = 0.85 * clamp(q.life / q.max) * smooth(0, 0.25, q.max - q.life);
+      }
+      const s = q.s * 7;
+      ctx.globalAlpha = a;
+      ctx.drawImage(pollenSprite, q.x - s / 2, q.y - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  /* ------------------------------------------------------------ frame loop */
+  let lastT = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000));
+    lastT = now;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(bgCanvas, 0, 0, W, H);
+
+    for (const p of plants) update(p, now, dt);
+    if (plants.some((p) => p.dieAt && p.fade <= 0)) plants = plants.filter((p) => !(p.dieAt && p.fade <= 0));
+
+    for (const back of [true, false]) {
+      for (const p of plants) {
+        if (p.back !== back) continue;
+        ctx.globalAlpha = p.fade;
+        drawStem(p, now);
+      }
+      ctx.globalAlpha = 1;
+      if (!back) { ctx.fillStyle = fogGrad; ctx.fillRect(0, H * 0.8, W, H * 0.2); }
+      ctx.globalCompositeOperation = "lighter";
+      for (const p of plants) if (p.back === back) { drawGlow(p); drawSpark(p, dt); }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+      for (const p of plants) if (p.back === back) drawHead(p, now);
+    }
+    drawFalling(now, dt);
+    drawFx(now);
+    drawParticles(now, dt);
+    shed(now);
+    requestAnimationFrame(frame);
+  }
+
+  /* ------------------------------------------------------------ story */
+  let started = false;
+  const later = (fn, ms) => setTimeout(fn, reduce ? 0 : ms);
+
+  function start(x, y) {
+    if (started) return;
+    started = true;
+    ripple(x == null ? W / 2 : x, y == null ? H / 2 : y, S * 0.3, 1800, 0.45);
+    docEl.classList.add("started");
+    measureBand();
+    const T0 = performance.now();
+    const order = LAYOUT.map((o, i) => ({ i, d: Math.hypot(o.x - 0.5, (o.y - 0.5) * 1.2) + (o.back ? 0.25 : 0) }))
+      .sort((a, b) => a.d - b.d);
+    let firstBloom = Infinity, lastBloom = 0;
+    order.forEach((ob, r) => {
+      const o = LAYOUT[ob.i];
+      const p = makePlant({
+        type: o.type, pal: o.pal, x: o.x, y: o.y, s: o.s, back: o.back,
+        rx: 0.5 + (o.x - 0.5) * 0.45 + rand(-0.04, 0.04),
+        born: T0 + 500 + r * 150,
+        growDur: 1900 + (1.04 - o.y) * 1100,
+        bloomDur: o.back ? 1700 : 2000
+      });
+      plants.push(p);
+      firstBloom = Math.min(firstBloom, p.born + p.growDur - T0);
+      lastBloom = Math.max(lastBloom, p.born + p.growDur + 120 + (p.T.maxD + 1) * p.bloomDur - T0);
+    });
+    later(() => $("l1").classList.add("show"), firstBloom + 900);
+    later(() => $("l2").classList.add("show"), firstBloom + 2600);
+    later(() => docEl.classList.add("ready"), lastBloom - 600);
+  }
+
+  let tapped = 0;
+  function growAt(x, y) {
+    const now = performance.now();
+    const yn = clamp(y / H, 0.1, 0.93);
+    const xn = (x - CX0) / CW;
+    ripple(x, y, S * 0.09, 1000, 0.35);
+    plants.push(makePlant({
+      type: pick(["rose", "anemone", "cosmos", "daisy", "tulip", "rose", "cosmos", "anemone"]),
+      x: xn, y: yn, s: rand(0.68, 0.95), raw: true,
+      rx: xn + rand(-0.1, 0.1),
+      born: now, growDur: 1100 + (1.04 - yn) * 900, bloomDur: 1400
+    }));
+    const live = plants.filter((p) => p.raw && !p.dieAt);
+    if (live.length > 30) live[0].dieAt = now;
+    if (++tapped === 2) $("hint").classList.add("gone");
+  }
+
+  /* ------------------------------------------------------------ touch: tap to grow, swipe for a breeze */
+  let down = null, lastP = null;
+  function breeze(x, y, vxp) {
+    const Rb = S * 0.22 + 40;
+    for (const p of plants) {
+      if (p.tipX == null) continue;
+      let d = Math.hypot(x - p.tipX, y - p.tipY);
+      if (p.mx != null) d = Math.min(d, Math.hypot(x - p.mx, y - p.my));
+      if (d < Rb) p.v += clamp(vxp, -4, 4) * 0.09 * (1 - d / Rb) * (p.back ? 0.6 : 1);
+    }
+    for (const f of falling) {
+      const d = Math.hypot(x - f.x, y - f.y);
+      if (d < Rb) { f.vx += clamp(vxp, -4, 4) * 45 * (1 - d / Rb); f.vr += clamp(vxp, -4, 4) * 0.6 * (1 - d / Rb); }
+    }
+  }
+  function hitFlower(x, y) {
+    let best = null, bd = Infinity;
+    for (const p of plants) {
+      if (p.tipX == null || p.dieAt || p.g < 1 || p.q[0] < 0.6) continue;
+      const R0 = baseR(p), up = p.type === "tulip" ? R0 * 0.6 : 0;
+      const d = Math.hypot(x - (p.tipX + p.tanX * up), y - (p.tipY + p.tanY * up)) / R0 + (p.back ? 0.35 : 0);
+      if (d < 1 && d < bd) { bd = d; best = p; }
+    }
+    return best;
+  }
+  function twirl(p) {
+    const now = performance.now();
+    if (p.flutterAt && now - p.flutterAt < 700) return;
+    p.flutterAt = now;
+    p.cache = null;
+    p.v += rand(-0.5, 0.5);
+    bloomFx(p, 0.85);
+  }
+  window.addEventListener("pointerdown", (e) => {
+    if (e.target.closest && e.target.closest("button")) return;
+    down = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
+    lastP = { x: e.clientX, y: e.clientY, t: performance.now() };
+  });
+  window.addEventListener("pointermove", (e) => {
+    const now = performance.now();
+    if (lastP && started) {
+      const dt = Math.max(8, now - lastP.t);
+      breeze(e.clientX, e.clientY, (e.clientX - lastP.x) / dt);
+      if (down) down.moved += Math.hypot(e.clientX - lastP.x, e.clientY - lastP.y);
+    }
+    lastP = { x: e.clientX, y: e.clientY, t: now };
+  });
+  window.addEventListener("pointerup", (e) => {
+    const d = down; down = null;
+    if (e.pointerType !== "mouse") lastP = null;
+    if (!d) return;
+    if (d.moved < 14 && performance.now() - d.t < 700) {
+      if (!started) start(e.clientX, e.clientY);
+      else { const f = hitFlower(e.clientX, e.clientY); if (f) twirl(f); else growAt(e.clientX, e.clientY); }
+    } else if (started && d.moved > 60) {
+      $("hint").classList.add("gone");
+    }
+  });
+  window.addEventListener("pointercancel", () => { down = null; lastP = null; });
+  window.addEventListener("keydown", (e) => {
+    if (!started && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); start(); }
+  });
+
+  /* ------------------------------------------------------------ go */
+  window.addEventListener("resize", resize);
+  resize();
+  ambient(W < 600 ? 34 : 52);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
