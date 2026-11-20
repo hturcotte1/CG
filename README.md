@@ -1,9 +1,10 @@
 # For Clare 💐
 
-A little virtual bouquet. Open `index.html` in a browser, or visit the GitHub Pages site.
+A night garden that grows for Clare. Open `index.html` in a browser, or visit the GitHub Pages site.
 
-- Tap the envelope to open it, and the bouquet grows itself
-- Tap anywhere to grow more flowers
-- "Open a little note" shows a random note
+- Touch to begin: stems grow, buds form, and each flower opens petal by petal
+- Tap anywhere to grow another flower up to that spot
+- Swipe across the flowers to send a breeze through them
+- "A note for you" shows a random note
 
 Everything lives in `index.html`. The notes are in the `NOTES` list near the top of the script.
